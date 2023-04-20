@@ -15,4 +15,6 @@ public interface UsersService {
     Users getByUserCredentials(UsersRequest usersRequest);
     Optional<Users> userUpdate(Integer id, UsersRequest userRequest);
     void deleteUser (UsersRequest userRequest);
+
+    Users getByEmail(String email);
 }
