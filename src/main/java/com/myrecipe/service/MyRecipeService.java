@@ -3,6 +3,9 @@ package com.myrecipe.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -124,6 +127,14 @@ public class MyRecipeService implements RecipesService{
             throw new RecordNotFoundException("No recipe with such name found!");
     }
 
+    @Override
+    public List<Recipes> getByKeyword(String keyword) {
+        if(recipesRepository.findByKeyword(keyword) != null) {
+            return recipesRepository.findByKeyword(keyword);
+        } else
+            throw new RecordNotFoundException("No recipes found!");
+    }
+
     /**
      *
      * @param request recipe category which will be used for searching
@@ -157,6 +168,15 @@ public class MyRecipeService implements RecipesService{
             throw new RecordNotFoundException("No public recipes found!");
     }
 
+    @Override
+    public List<Recipes> getLastTenPublicRecipes() {
+        List<Recipes> publicRecipes = recipesRepository.findLastTenPublicRecipes();
+        if (!publicRecipes.isEmpty()) {
+            return publicRecipes;
+        } else
+            throw new RecordNotFoundException("No public recipes found!");
+    }
+
     /**
      *
      * @param usersRequest email and password of the user
@@ -180,5 +200,25 @@ public class MyRecipeService implements RecipesService{
 
         } else
             throw new SecurityException("Error accessing private recipes");
+    }
+
+    @Override
+    public List<Recipes> getUsersAllPublicRecipes(Integer id) {
+        Users user = usersRepository.getReferenceById(id);
+        if(user == null) {
+            throw new RecordNotFoundException("No such user!");
+        }
+
+        List<Recipes> userRecipes = recipesRepository.findUsersAllPublicRecipes(id);
+        if (!userRecipes.isEmpty()) {
+            return userRecipes;
+        } else
+            throw new RecordNotFoundException("This user does not have any public recipes");
+    }
+
+    @Override
+    public Page<Recipes> getPage(int pageNumber) {
+        Pageable pageable = PageRequest.of(pageNumber-1,5);
+        return recipesRepository.findAllPublicRecipes(pageable);
     }
 }
