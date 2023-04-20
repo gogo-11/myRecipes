@@ -38,7 +38,6 @@ public class UsersRestController {
         return new ResponseEntity<>(userByID, HttpStatus.OK);
     }
 
-    //authentication как да стане email, pass
     @PostMapping("/login")
     public ResponseEntity<UsersResponse> getByUserCredentials(@RequestBody UsersRequest usersRequest) {
         Users user = userService.getByUserCredentials(usersRequest);

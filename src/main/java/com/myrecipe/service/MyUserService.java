@@ -23,7 +23,7 @@ public class MyUserService implements UsersService{
     @Autowired
     private UsersRepository userRepository;
     @Autowired
-        private PasswordEncoder encoder;
+    private PasswordEncoder encoder;
 
     /**
      *
@@ -117,6 +117,14 @@ public class MyUserService implements UsersService{
             throw new InvalidLoginDataException("Wrong login info!");
     }
 
+    @Override
+    public Users getByEmail(String email) {
+        if(userRepository.findByEmail(email) != null) {
+            return userRepository.findByEmail(email);
+        } else
+            throw new RecordNotFoundException("User with the specified ID does not exist!");
+    }
+
     /**
      *
      * @param id the ID of the user whose information will be updated
@@ -159,5 +167,7 @@ public class MyUserService implements UsersService{
         } else
             throw new RecordNotFoundException("User with the specified ID not found");
     }
+
+
 
 }
