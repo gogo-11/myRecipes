@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Създай рецепта | MyRecipes</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<div class="body-container">
+  <div class="user-account" sec:authorize="!isAuthenticated()">
+    <a href="/login_form">Вход</a>
+    или
+    <a href="/registration">Регистрация</a>
+  </div>
+
+  <div class="user-account" sec:authorize="isAuthenticated()">
+    <form id="logoutForm" method="POST" th:action="@{/logout}">
+      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+    </form>
+    Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Излез</a>
+  </div>
+
+  <div class="top-menu">
+    <a th:href="welcome" href="welcome.html"> <img src="/img/home.png" width="20"></a>
+    <a th:href="all-recipes" href="all-recipes.html">Всички рецепти</a>
+    <a href="/search">Потърси рецепта</a>
+    <div sec:authorize="hasRole('ROLE_USER')" >
+      <a th:href="login-form" href="login_form.html" >Тайни рецепти</a>
+      <a href="/my-recipes">Мои рецепти</a>
+      <a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a>
+        <a th:href="account" href="account.html">Профил</a>
+    </div>
+  </div>
+
+  <div class="content">
+    <h3>Добави нова рецепта</h3>
+    <div class="forms">
+      <form th:object="${recipe}" method="post">
+          <legend>Информация за рецептата</legend><br>
+          <input name="recipeName" type="text" required placeholder="Име на рецептата...">
+          <!--      <br><br>-->
+
+          <input name="products" type="text" required placeholder="Продукти...">
+          <br><br>
+
+          <input name="portions" type="number" min="0" required placeholder="Порции">
+          <!--      <br><br>-->
+
+          <input name="cookingTime" type="number" min="0" required placeholder="Време за готвене...">
+          <br><br>
+
+          <input name="category" list="category" required placeholder="Избери категория"
+                 pattern="MEAT|MEATLESS|DESSERTS|ALAMINUTES|SOUPS|SALADS|DOUGH">
+          <br><br>
+
+          <textarea name="cookingSteps" required placeholder="Стъпки за приготвяне..."></textarea>
+          <!--      <br><br>-->
+
+          <!--      <input name="category" type="text" required placeholder="Choose category">-->
+
+          <datalist id="category">
+            <option value="MEAT">Месни</option>
+            <option value="MEATLESS">Безмесни</option>
+            <option value="DESSERTS">Десерти</option>
+            <option value="ALAMINUTES">Аламинути</option>
+            <option value="SOUPS">Супи</option>
+            <option value="SALADS">Салати</option>
+            <option value="DOUGH">Тестени</option>
+          </datalist>
+          <br><br>
+
+          <label>Тайна ли е рецептата</label><br>
+          <input type="radio" name="isPrivate" value="false" checked>Не
+          <input type="radio" name="isPrivate" value="true">Да
+          <br><br>
+
+          <input type="Submit" value="Създай рецепта">
+      </form>
+    </div>
+
+    <div sec:authorize="hasRole('ROLE_ADMIN')">
+      This content is only shown to administrators.§§
+    </div>
+
+    <div sec:authorize="hasRole('ROLE_USER')">
+      This content is only shown to users.
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

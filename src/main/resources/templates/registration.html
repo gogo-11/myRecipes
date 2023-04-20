@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Регистрация | MyRecipes</title>
+    <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<div class="body-container">
+    <div class="user-account" sec:authorize="!isAuthenticated()">
+        <a href="/login_form">Вход</a>
+        или
+        <a href="/registration">Регистрация</a>
+    </div>
+
+    <div class="user-account" sec:authorize="isAuthenticated()">
+        <form id="logoutForm" method="POST" th:action="@{/logout}">
+            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        </form>
+        Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Излез</a>
+    </div>
+
+    <div class="top-menu">
+        <a th:href="welcome" href="welcome.html"> <img src="/img/home.png" width="20"></a>
+        <a th:href="all-recipes" href="all-recipes.html">Всички рецепти</a>
+        <a href="/search">Потърси рецепта</a>
+        <div sec:authorize="hasRole('ROLE_USER')" >
+            <a th:href="login-form" href="login_form.html" >Тайни рецепти</a>
+            <a href="/my-recipes">Мои рецепти</a>
+            <a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a>
+            <a th:href="account" href="account.html">Профил</a>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="forms">
+            <form th:object="${user}" method="post">
+                <legend>Регистрация</legend> <br>
+
+                Вече имате акаунт? <a href="/login_form">Вход</a><br><br>
+
+                <input name="firstName" type="text" required placeholder="Име">
+
+                <br><span th:text="${errFirstName}"></span><br>
+
+                <input name="lastName" type="text" required placeholder="Фамилия">
+                <span th:text="${errLastName}"></span>
+                <br><br>
+
+                <input name="email" type="email" required placeholder="example@mail.com">
+                <span th:text="${errEmail}"></span>
+                <br><br>
+
+                <input id="pass" name="password" type="password" required placeholder="Парола">
+                <br>
+                <input type="checkbox" onclick="showPassword()" id="passShow"> <label for="passShow" style="font-size: 14px">покажи паролата</label>
+                <br><br>
+
+                <input id="cPass" name="confirmPass" type="password" required placeholder="Повтори паролата" oninput="matchPassword()"> <br>
+                <span id="Message"></span>
+                <br><br>
+
+                <input id="subm" type="Submit" value="Регистрация" disabled> <br><br>
+
+
+            </form>
+        </div>
+        <div sec:authorize="hasRole('ROLE_ADMIN')">
+            This content is only shown to administrators.§§
+        </div>
+
+        <div sec:authorize="hasRole('ROLE_USER')">
+            This content is only shown to users.
+        </div>
+
+    </div>
+</div>
+<script language="JavaScript">
+function matchPassword() {
+  var pw1 = document.getElementById("pass").value;
+  var pw2 = document.getElementById("cPass").value;
+  console.log(pw1);
+  console.log(pw2);
+  if(pw1 == pw2)
+  {
+    document.getElementById("subm").disabled=false;
+    document.getElementById("pass").style.borderColor = "black";
+    document.getElementById("cPass").style.borderColor = "black";
+        document.getElementById("Message").innerHTML = "";
+  } else {
+    document.getElementById("pass").style.borderColor = "tomato";
+    document.getElementById("cPass").style.borderColor = "tomato";
+    document.getElementById("subm").disabled=true;
+    document.getElementById("Message").innerHTML = "Паролите не съвпадат!";
+  }
+}
+
+function showPassword() {
+   var x = document.getElementById("pass");
+     if (x.type === "password") {
+         x.type = "text";
+     } else {
+        x.type = "password";
+     }
+}
+</script>
+
+</body>
+</html>

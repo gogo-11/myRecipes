@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Добре дошли | MyRecipes</title>
+    <link rel="stylesheet" href="/css/style.css"/>
+</head>
+
+<body>
+<div class="body-container">
+    <div class="user-account" sec:authorize="!isAuthenticated()">
+        <a href="/login_form">Вход</a>
+        или
+        <a href="/registration">Регистрация</a>
+    </div>
+
+    <div class="user-account" sec:authorize="isAuthenticated()">
+        <form id="logoutForm" method="POST" th:action="@{/logout}">
+            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        </form>
+        Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Изход</a>
+<!--        <small th:utext="${#strings.substringAfter("sec:authentication="'name','_'}"></small>-->
+    </div>
+
+    <div class="top-menu">
+        <a th:href="welcome" href="welcome.html"> <img src="/img/home.png" width="20"></a>
+        <a th:href="all-recipes" href="all-recipes">Всички рецепти</a>
+        <a th:href="search" href="search">Потърси рецепта</a>
+        <div sec:authorize="hasRole('ROLE_USER')" >
+            <a th:href="login-form" href="login_form.html" >Тайни рецепти</a>
+            <a href="/my-recipes">Мои рецепти</a>
+            <a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a>
+            <a th:href="account" href="account.html">Профил</a>
+<!--            <а href="www.google.com">Профил</а>-->
+        </div>
+    </div>
+
+<div class="content">
+    Последни рецепти
+    <br>
+    <table>
+<!--        <thead>-->
+<!--        <tr>-->
+<!--            <th>Latest recipes</th>-->
+<!--        </tr>-->
+<!--        </thead>-->
+        <tbody>
+        <tr th:each="recipesRow: ${recipesRows}">
+<!--            th:each="recipe: ${recipesRow}"-->
+            <td th:each="recipe: ${recipesRow}">
+                <a th:href="@{/view-recipe/__${recipe.id}__}" th:text="${recipe.recipeName}"/>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div sec:authorize="hasRole('ROLE_ADMIN')">
+        This content is only shown to administrators.§§
+    </div>
+
+    <div sec:authorize="hasRole('ROLE_USER')">
+        This content is only shown to users.
+    </div>
+
+</div>
+</div>
+
+</body>
+</html>

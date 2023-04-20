@@ -1,0 +1,220 @@
+body {
+  font-family: Segoe UI,Arial,sans-serif;
+  margin: 0;
+}
+
+.body-container {
+    width: 70%;
+    margin: auto;
+    margin-top: 0px;
+    margin-bottom: 35px;
+    font-size: 18px;
+    color: #595959;
+    box-shadow: 2px 30px 18px #888888;
+    height: fit-content;
+    min-height: 90vh;
+
+}
+
+.content {
+    padding-top: 102px;
+    padding: 70px;
+    font-size:20px;
+   	color: #595959;
+   	text-align: center;
+   	height: fit-content;
+}
+
+.top-menu {
+    background-color: #1abc9c;
+    overflow: hidden;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.top-menu a {
+  float: left;
+  color: #ffffff;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  border-radius: 35px;
+  font-size: 17px;
+}
+
+.top-menu a:hover {
+  background-color: #559b8d;
+  color: #f2f2f2;
+}
+
+.user-account {
+    border: 2px solid #1abc9c;
+    margin: 10px;
+    margin-bottom: -2px;
+    margin-left: auto;
+    padding: 20px;
+    width: fit-content;
+    align: right;
+    text-align: center;
+}
+
+.user-account a {
+    background-color: #1abc9c;
+    color: white;
+    margin: 5px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 3px;
+    padding-bottom: 5px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 15px;
+    border: 1px solid #1abc9c;
+}
+
+.user-account a:hover {
+    background-color: #ffffff;
+    color: #1abc9c;
+    border: 1px solid #1abc9c;
+}
+
+.pagination {
+  text-align: center;
+  bottom: 0;
+  margin: 20px;
+}
+
+.pagination a{
+    text-decoration: none;
+    color: #1abc9c;
+}
+
+.pagination a:hover{
+    color: DodgerBlue;
+}
+
+table, th, td{
+    //border: 2px solid #595959;
+    border-collapse: collapse;
+    text-align: center;
+    width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+td {
+    padding: 15px;
+}
+
+table a {
+    text-decoration: none;
+    color: #1abc9c;
+}
+
+table a:hover {
+    color: DodgerBlue;
+}
+
+input[type=submit] {
+    padding:5px 15px;
+    background: #1abc9c;
+    border:0 none;
+    width: fit-content;
+    height: fit-content;
+    cursor: pointer;
+    -webkit-border-radius: 5px;
+    border-radius: 8px;
+    font-size: 18px;
+    font-family: Segoe UI,Arial,sans-serif;
+    color: white;
+}
+
+input[type=submit]:hover {
+    background: #559b8d;
+    color: white;
+}
+
+input[type=radio] {
+    height: auto;
+    width: auto;
+}
+
+input[type=checkbox] {
+    height: auto;
+    width: auto;
+    font-size: 10px;
+}
+
+input {
+    font-family: Segoe UI,Arial,sans-serif;
+    height:30px;
+    width:200px;
+    font-size: 16px;
+    border-radius: 11px;
+}
+
+a {
+    text-decoration: none;
+    color: #1abc9c;
+}
+
+a:hover {
+    color: DodgerBlue;
+}
+
+h3 {
+    text-align: center;
+}
+
+.forms {
+    border:1px solid #787878;
+    border-radius: 20px;
+    width:65%;
+    padding:20px;
+    margin: auto;
+    text-align: center;
+}
+
+textarea{
+    font-family: Segoe UI,Arial,sans-serif;
+	max-width: 450px;
+	max-height: 300px;
+	width: 400px;
+	min-width: 400px;
+	min-height: 60px;
+	border-radius: 11px;
+	font-size: 16px;
+}
+
+.leftSpl {
+padding-top: 102px;
+    padding: 20px;
+    font-size: 20px;
+   	color: #595959;
+   	height: fit-content;
+
+  width: fit-content;
+  text-align: center;
+  float: left;
+  border: 1px solid #787878;
+  margin: auto;
+  margin-left: 70px;
+}
+
+.rightSpl {
+padding-top: 102px;
+    padding: 20px;
+    font-size: 18px;
+   	color: #595959;
+
+   	height: fit-content;
+
+  right: 0;
+  width: 50%;
+  text-align: left;
+  border: 1px solid #787878;
+}
+
+.deleteButton a:hover{
+    color: Tomato;
+}

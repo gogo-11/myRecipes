@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Всички рецепти | MyRecipes</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<div class="body-container">
+    <div class="user-account" sec:authorize="!isAuthenticated()">
+        <a href="/login_form">Вход</a>
+        или
+        <a href="/registration">Регистрация</a>
+    </div>
+
+    <div class="user-account" sec:authorize="isAuthenticated()">
+        <form id="logoutForm" method="POST" th:action="@{/logout}">
+            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        </form>
+        Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Излез</a>
+    </div>
+
+    <div class="top-menu">
+        <a href="/welcome"> <img src="/img/home.png" width="20"></a>
+        <a href="/all-recipes">Всички рецепти</a>
+        <a href="/search">Потърси рецепта</a>
+        <div sec:authorize="isAuthenticated()">
+            <a th:href="login-form" href="login_form.html">Тайни рецепти</a>
+            <a href="/my-recipes">Мои рецепти</a>
+            <a href="/add-recipe">Добави рецепта</a>
+            <a href="/account">Профил</a>
+        </div>
+    </div>
+    <div class="content">
+      <span th:text="${userN}"></span>
+      <span sec:authentication="name"></span>
+      <table>
+          <tbody>
+          <tr th:each="recipe: ${recipes}">
+              <td>
+                  <a th:href="@{/view-recipe/{id}(id=${recipe.id})}" th:text="${recipe.recipeName}"/>
+              </td>
+            <!--    <td th:text="${recipe.products}" />-->
+            <!--    <td th:text="${recipe.portions}" />-->
+            <!--    <td th:text="${recipe.cookingTime}" />-->
+            <!--    <td th:text="${recipe.cookingSteps}" />-->
+            <!--    <td th:text="${recipe.category}" />-->
+          </tr>
+          </tbody>
+      </table>
+
+      <div style="font-size: large" class="pagination">
+        Общо рецепти [[${totalItems}]] : Страница [[${currentPage}]] от [[${totalPages}]]
+        &nbsp; &nbsp; - &nbsp;
+        <span th:each="i: ${#numbers.sequence(1, totalPages)}">
+            <a th:href="@{'/all-recipes/page/' + ${i}}">[[${i}]]</a>
+            &nbsp; &nbsp;
+        </span>
+      </div>
+    </div>
+</div>
+</body>
+</html>
