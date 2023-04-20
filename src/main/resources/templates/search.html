@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <title>Потърси рецепта | MyRecipes</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<div class="body-container">
+  <div class="user-account" sec:authorize="!isAuthenticated()">
+    <a href="/login_form">Вход</a>
+    или
+    <a href="/registration">Регистрация</a>
+  </div>
+
+  <div class="user-account" sec:authorize="isAuthenticated()">
+    <form id="logoutForm" method="POST" th:action="@{/logout}">
+      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+    </form>
+    Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Изход</a>
+  </div>
+
+  <div class="top-menu">
+    <a th:href="welcome" href="welcome.html"> <img src="/img/home.png" width="20"></a>
+    <a th:href="all-recipes" href="all-recipes.html">Всички рецепти</a>
+    <a href="/search">Потърси рецепта</a>
+    <div sec:authorize="hasRole('ROLE_USER')" >
+      <a th:href="login-form" href="login_form.html" >Тайни рецепти</a>
+      <a href="/my-recipes">Мои рецепти</a>
+      <a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a>
+<!--      <а th:href="account" href="account.html">Профил</а>-->
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="forms">
+      <form th:action="@{/search}" method="get">
+        <h3>Намерете рецепта</h3> <br>
+        <span th:text="${message}"></span><br>
+
+        <input name="keyword" type="text" th:value="${keyword}" placeholder="Въведете ключова дума...">
+        <input name="submName" type="Submit" value="Търси по ключова дума">
+        <br>
+        <span th:text="${error}"></span>
+        <br><br>
+      </form>
+
+
+      <form th:action="@{/search}" method="get">
+        <input name="cat" list="cat" placeholder="Избери категория"
+               pattern="MEAT|MEATLESS|DESSERTS|ALAMINUTES|SOUPS|SALADS|DOUGH">
+        <datalist id="cat">
+          <option value="MEAT">Месни</option>
+          <option value="MEATLESS">Безмесни</option>
+          <option value="DESSERTS">Десерти</option>
+          <option value="ALAMINUTES">Аламинути</option>
+          <option value="SOUPS">Супи</option>
+          <option value="SALADS">Салати</option>
+          <option value="DOUGH">Тестени</option>
+        </datalist>
+
+        <input name="submCategory" type="Submit" value="Търси по категория">
+        <br>
+        <span th:text="${errorCat}"></span>
+      </form>
+
+<!--      <a th:href="@{/view-recipe/__${recipe.id}__}" th:text="${recipe.recipeName}"/>-->
+
+
+    </div>
+
+    <table>
+      <tbody>
+      <tr th:each="recipe: ${recipesFound}">
+        <td>
+          <a th:href="@{/view-recipe/__${recipe.id}__}" th:text="${recipe.recipeName}"/>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+    <div sec:authorize="hasRole('ROLE_ADMIN')">
+      This content is only shown to administrators.§§
+    </div>
+
+    <div sec:authorize="hasRole('ROLE_USER')">
+      This content is only shown to users.
+    </div>
+
+  </div>
+</div>
+<script language="JavaScript">
+function matchPassword() {
+  var pw1 = document.getElementById("pass").value;
+  var pw2 = document.getElementById("cPass").value;
+  console.log(pw1);
+  console.log(pw2);
+  if(pw1 == pw2)
+  {
+    document.getElementById("subm").disabled=false;
+    document.getElementById("pass").style.borderColor = "black";
+    document.getElementById("cPass").style.borderColor = "black";
+        document.getElementById("Message").innerHTML = "";
+  } else {
+    document.getElementById("pass").style.borderColor = "tomato";
+    document.getElementById("cPass").style.borderColor = "tomato";
+    document.getElementById("subm").disabled=true;
+    document.getElementById("Message").innerHTML = "Passwords do NOT match!";
+  }
+}
+
+function showPassword() {
+   var x = document.getElementById("pass");
+     if (x.type === "password") {
+         x.type = "text";
+     } else {
+        x.type = "password";
+     }
+}
+</script>
+
+</body>
+</html>

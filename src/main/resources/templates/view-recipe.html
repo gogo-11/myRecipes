@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${recipe.recipeName +' | MyRecipes'}"></title>
+    <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<div class="body-container">
+<!--    <table>-->
+<!--        <tbody>-->
+<!--        <tr th:each="recipe: ${recipes}">-->
+<!--            <td>-->
+<!--                <a th:href="@{/view-recipe/{id}(id=${recipe.id})}" th:text="${recipe.recipeName}"/>-->
+<!--            </td>-->
+<!--            &lt;!&ndash;    <td th:text="${recipe.products}" />&ndash;&gt;-->
+<!--            &lt;!&ndash;    <td th:text="${recipe.portions}" />&ndash;&gt;-->
+<!--            &lt;!&ndash;    <td th:text="${recipe.cookingTime}" />&ndash;&gt;-->
+<!--            &lt;!&ndash;    <td th:text="${recipe.cookingSteps}" />&ndash;&gt;-->
+<!--            &lt;!&ndash;    <td th:text="${recipe.category}" />&ndash;&gt;-->
+<!--        </tr>-->
+<!--        </tbody>-->
+<!--    </table>-->
+    <div class="user-account" sec:authorize="!isAuthenticated()">
+        <a href="/login_form">Вход</a>
+        или
+        <a href="/registration">Регистрация</a>
+    </div>
+
+    <div class="user-account" sec:authorize="isAuthenticated()">
+        <form id="logoutForm" method="POST" th:action="@{/logout}">
+            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        </form>
+        Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Изход</a>
+    </div>
+
+    <div class="top-menu">
+        <a href="/welcome"> <img src="/img/home.png" width="20"></a>
+        <a href="/all-recipes">Всички рецепти</a>
+        <a href="/search">Потърси рецепта</a>
+        <div sec:authorize="hasRole('ROLE_USER')" >
+            <a th:href="login-form" href="login_form.html" >Тайни рецепти</a>
+            <a href="/my-recipes">Мои рецепти</a>
+            <a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a>
+            <a th:href="account" href="account.html">Профил</a>
+        </div>
+    </div>
+
+    <div class="content">
+        <!--        <div class="rightSpl">-->
+        <h2 th:text="${recipe.recipeName}"></h2>
+    </div>
+
+    <div class="leftSpl">
+        Необходими продукти: <br>
+        <span th:text="${recipe.products}"></span>
+        <br><br>
+
+        Порции:<br>
+        <span th:text="${recipe.portions}"></span>
+        <br><br>
+        Време за приготвяне: <br>
+        <span th:text="${recipe.cookingTime}"> мин.</span>
+        <br>
+        <span sec:authorize="hasRole('ROLE_USER')" th:if="${user.email} == ${userByRecipe}"><a href="#news">Редактирай</a></span>
+        <span sec:authorize="isAuthenticated()"
+              th:if="${user.email} == ${userByRecipe} or ${#authorization.expression('hasRole(''ADMIN'')')}"
+              class="deleteButton">
+            <a th:href="@{/delete-recipe/__${recipe.id}__}" >Изтрий</a></span>
+    </div>
+
+    <div class="content" style="padding-top: 20px;">
+<!--        <div class="rightSpl">-->
+<!--            <span th:text="${recipe.recipeName}"></span>-->
+<!--            <br> <br>-->
+
+            Категория:
+            <span th:text="${recipe.category}"></span>
+            <br><br>
+
+            Начин на приготвяне: <br>
+            <span th:text="${recipe.cookingSteps}"></span>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+<!--        </div>-->
+
+         <br>
+            Рецепти от същата категория:
+
+
+<!--        <div sec:authorize="hasRole('ROLE_ADMIN')">-->
+<!--            This content is only shown to administrators.§§-->
+<!--        </div>-->
+
+<!--        <div sec:authorize="hasRole('ROLE_USER')">-->
+<!--            This content is only shown to users.-->
+<!--        </div>-->
+    </div>
+</div>
+
+</body>
+</html>
