@@ -14,11 +14,12 @@ public enum RolesEn {
     /**
      * Роля на адмонистратор
      */
-    ADMIN("admin"),
+    ADMIN("ROLE_ADMIN"),
+
     /**
      * Роля на обикновен потребител
      */
-    USER("user");
+    USER("ROLE_USER");
 
     RolesEn (String roleName) {
         this.roleName = roleName;
