@@ -186,6 +186,7 @@ public class MyRecipeService implements RecipesService{
     public List<Recipes> getUsersAllPrivateRecipes(UsersRequest usersRequest) {
         Users user = usersRepository.findByEmail(usersRequest.getEmail());
         int userId = user.getId();
+
         if(user == null) {
             throw new InvalidLoginDataException("Wrong email or password!");
         }
