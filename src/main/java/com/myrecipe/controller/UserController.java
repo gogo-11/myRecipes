@@ -1,7 +1,13 @@
 package com.myrecipe.controller;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.collections4.ListUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,9 +28,8 @@ import com.myrecipe.repository.RecipesRepository;
 import com.myrecipe.security.SecurityService;
 import com.myrecipe.service.RecipesService;
 import com.myrecipe.service.UsersService;
-import org.apache.commons.collections4.ListUtils;
 
-import javax.servlet.http.HttpServletRequest;
+
 
 @Controller
 public class UserController {
@@ -147,10 +152,14 @@ public class UserController {
             return "redirect:/";
         }
         String products = recipe.getProducts().replace(',','\n');
+//        String[] prodArr = recipe.getProducts().split(",");
+//        List<String> prodList = Arrays.asList(prodArr);
         recipe.setProducts(products);
 
         if(Boolean.TRUE.equals(recipe.getIsPrivate())){
-            return "redirect:/";
+            if(!securityService.getAuthentication().equals(recipe.getUser().getEmail())){
+                return "redirect:/";
+            }
         }
         model.addAttribute("recipe", recipe);
 
@@ -325,6 +334,45 @@ public class UserController {
         usersService.userUpdate(user.getId(), request);
 
         return "redirect:/account";
+    }
+
+    @GetMapping("/secret-recipes")
+    public String showSecretRecipes(Model model) {
+        if(!securityService.isAuthenticated()){
+            return "redirect:/welcome";
+        }
+        model.addAttribute("recipe", new Recipes());
+        return "secret-recipes";
+    }
+
+    @PostMapping("/secret-recipes")
+    public String viewPrivateRecipes(@RequestParam("password") String password, Model model) {
+        // Get the currently logged-in user
+        Users loggedInUser = usersService.getByEmail(securityService.getAuthentication());
+
+        UsersRequest currentUser = new UsersRequest();
+        currentUser.setEmail(securityService.getAuthentication());
+        currentUser.setPassword(password);
+
+        // Verify the entered password against the stored password for the logged-in user
+        if (securityService.isAuthenticated() && encoder.matches(password, loggedInUser.getPassword())) {
+            // If password is correct, retrieve private recipes from the database
+            try{
+                List<Recipes> privateRecipes = recipesService.getUsersAllPrivateRecipes(currentUser);
+                model.addAttribute("recipes", privateRecipes);
+            }
+            catch (RecordNotFoundException e) {
+                model.addAttribute("errorMessage", "Нямате тайни рецепти. Добави?.");
+            }
+
+            // Add the list of private recipes to the model to be displayed in the view
+
+            return "secret-recipes";
+        } else {
+            // If password is incorrect, show error message
+            model.addAttribute("errorMessage", "Грешна парола. Опитайте пак.");
+            return "secret-recipes";
+        }
     }
 
 }

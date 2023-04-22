@@ -39,10 +39,10 @@
         <a href="/all-recipes">Всички рецепти</a>
         <a href="/search">Потърси рецепта</a>
         <div sec:authorize="hasRole('ROLE_USER')" >
-            <a th:href="login-form" href="login_form.html" >Тайни рецепти</a>
+            <a href="/secret-recipes" >Тайни рецепти</a>
             <a href="/my-recipes">Мои рецепти</a>
-            <a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a>
-            <a th:href="account" href="account.html">Профил</a>
+            <a href="/add-recipe">Добави рецепта</a>
+            <a href="/account">Профил</a>
         </div>
     </div>
 
