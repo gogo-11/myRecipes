@@ -83,6 +83,11 @@ public class MyRecipeService implements RecipesService{
         } else
             throw new InvalidUserRequestException("Incorrect input in field Is private in user's request!");
 
+        if(recipesRequest.getImage() != null) {
+            recipe.setImage(recipesRequest.getImage());
+        } else
+            throw new InvalidUserRequestException("A problem has occurred while trying to process the image!");
+
         recipe.setUser(user);
 
         recipesRepository.save(recipe);

@@ -1,5 +1,8 @@
 package com.myrecipe.entities;
 
+import java.io.Serializable;
+
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -9,13 +12,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import lombok.*;
-
-import java.io.Serializable;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  *Представлява рецепта на даден потребител
@@ -63,4 +68,9 @@ public class Recipes implements Serializable {
     @JoinColumn(name="user_id", nullable = false)
     @JsonBackReference
     private Users user;
+
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "image")
+    private byte[] image;
 }

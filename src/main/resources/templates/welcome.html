@@ -36,7 +36,7 @@
     </div>
 
 <div class="content">
-    Последни рецепти
+    <h2>Последни рецепти</h2>
     <br>
     <table>
 <!--        <thead>-->
@@ -48,7 +48,10 @@
         <tr th:each="recipesRow: ${recipesRows}">
 <!--            th:each="recipe: ${recipesRow}"-->
             <td th:each="recipe: ${recipesRow}">
-                <a th:href="@{/view-recipe/__${recipe.id}__}" th:text="${recipe.recipeName}"/>
+                <a th:href="@{/view-recipe/{id}(id=${recipe.id})}">
+                    <img th:if="${recipe.image}" th:src="@{'/recipes/image/{id}'(id=${recipe.id})}" a
+                         lt="Recipe image" width="200px"></a><br>
+                <a th:href="@{/view-recipe/{id}(id=${recipe.id})}" th:text="${recipe.recipeName}"/>
             </td>
         </tr>
         </tbody>
