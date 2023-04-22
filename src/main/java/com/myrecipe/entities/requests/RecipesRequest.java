@@ -9,7 +9,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import com.myrecipe.entities.Categories;
-import com.myrecipe.entities.Users;
 @Data
 @NoArgsConstructor
 public class RecipesRequest {
@@ -45,4 +44,8 @@ public class RecipesRequest {
     @NotNull
     @NotBlank
     private Integer userId;
+
+    @NotNull
+    @NotBlank
+    private byte[] image;
 }

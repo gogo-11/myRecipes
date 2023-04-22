@@ -35,7 +35,7 @@
   <div class="content">
     <h3>Добави нова рецепта</h3>
     <div class="forms">
-      <form th:object="${recipe}" method="post">
+      <form th:object="${recipe}" method="post" enctype="multipart/form-data">
           <legend>Информация за рецептата</legend><br>
           <input name="recipeName" type="text" required placeholder="Име на рецептата...">
           <!--      <br><br>-->
@@ -74,11 +74,16 @@
           <input type="radio" name="isPrivate" value="true">Да
           <br><br>
 
+          <input type="file" name="imageFile">
+          <br><br>
+
           <input type="Submit" value="Създай рецепта">
       </form>
     </div>
 
-    <div sec:authorize="hasRole('ROLE_ADMIN')">
+    <div th:if="${errorMessage}" th:text="${errorMessage}" style="color: red;"></div>
+
+      <div sec:authorize="hasRole('ROLE_ADMIN')">
       This content is only shown to administrators.§§
     </div>
 

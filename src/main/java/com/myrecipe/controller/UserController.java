@@ -1,11 +1,13 @@
 package com.myrecipe.controller;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.collections4.ListUtils;
 
@@ -28,7 +30,7 @@ import com.myrecipe.repository.RecipesRepository;
 import com.myrecipe.security.SecurityService;
 import com.myrecipe.service.RecipesService;
 import com.myrecipe.service.UsersService;
-
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Controller
@@ -182,17 +184,42 @@ public class UserController {
     }
 
     @PostMapping("/add-recipe")
-    public String addRecipe (@ModelAttribute(name="request") RecipesRequest request) {
+    public String addRecipe (@ModelAttribute(name="request") RecipesRequest request, @RequestParam("imageFile") MultipartFile imageFile, Model model) {
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
         }
         String authentication = securityService.getAuthentication();
         Users user = usersService.getByEmail(authentication);
 
+        if (!imageFile.isEmpty()) {
+            try {
+                request.setImage(imageFile.getBytes());
+            } catch (IOException e) {
+                // Handle exception
+                model.addAttribute("errorMessage", "Грешка при качването на изображение");
+                return "add-recipe";
+            }
+        }
+
         request.setUserId(user.getId());
         recipesService.createRecipe(request, user.getId());
 
         return "redirect:/my-recipes";
+    }
+
+    @GetMapping("/recipes/image/{id}")
+    public void renderImage(@PathVariable("id") Integer id, HttpServletResponse response) {
+        Recipes recipe = recipesService.getById(id);
+        if (recipe != null && recipe.getImage() != null) {
+            try {
+                response.setContentType("image/jpeg"); // Set the appropriate content type for your image
+                response.getOutputStream().write(recipe.getImage());
+                response.getOutputStream().flush();
+            } catch (IOException e) {
+                // Handle exception
+                System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+            }
+        }
     }
 
     @GetMapping("/my-recipes")
