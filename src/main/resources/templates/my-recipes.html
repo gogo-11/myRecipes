@@ -1,68 +1,111 @@
 <!DOCTYPE html>
 <html lang="bg" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="UTF-8">
-    <title>Моите рецепти | MyRecipes</title>
-    <link rel="stylesheet" href="/css/style.css"/>
+  <title>Всички рецепти | MyRecipes</title>
+
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-<div class="body-container">
-  <div class="user-account" sec:authorize="!isAuthenticated()">
-    <a href="/login_form">Вход</a>
-    или
-    <a href="/registration">Регистрация</a>
-  </div>
-
-  <div class="user-account" sec:authorize="isAuthenticated()">
-    <form id="logoutForm" method="POST" th:action="@{/logout}">
-      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-    </form>
-    Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Излез</a>
-  </div>
-
-  <div class="top-menu">
-    <a th:href="welcome" href="welcome.html"> <img src="/img/home.png" width="20"></a>
-    <a th:href="all-recipes" href="all-recipes.html">Всички рецепти</a>
-    <a href="/search">Потърси рецепта</a>
-    <div sec:authorize="hasRole('ROLE_USER')" >
-      <a th:href="secret-recipes" href="secret-recipes.html" >Тайни рецепти</a>
-      <a href="/my-recipes">Мои рецепти</a>
-      <a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a>
-      <a th:href="account" href="account.html">Профил</a>
-    </div>
-  </div>
-
-  <div class="content">
-    <span th:text="${recipeDeleted}" style="background-color: Aquamarine"></span>
-<!--    <div th:if="">-->
-    <table>
-      <thead>
-      <tr>
-        <th>Моите рецепти</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr th:each="recipe: ${recipes}">
-        <td>
-          <a th:href="@{/view-recipe/{id}(id=${recipe.id})}">
-            <img th:if="${recipe.image}" th:src="@{'/recipes/image/{id}'(id=${recipe.id})}" a
-                 lt="Recipe image" width="200px"></a><br>
-          <a th:href="@{/view-recipe/{id}(id=${recipe.id})}" th:text="${recipe.recipeName}"/>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-<!--  </div>-->
-    <div sec:authorize="hasRole('ROLE_ADMIN')">
-      This content is only shown to administrators.§§
-    </div>
-
-    <div sec:authorize="hasRole('ROLE_USER')">
-      This content is only shown to users.
-    </div>
-
-  </div>
+<div class="user-account" id="user-account" sec:authorize="!isAuthenticated()">
+  <a href="/login_form">Вход</a>
+  или
+  <a href="/registration">Регистрация</a>
 </div>
 
+<div class="user-account" sec:authorize="isAuthenticated()">
+  <form id="logoutForm" method="POST" th:action="@{/logout}">
+    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+  </form>
+  Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Изход</a>
+</div>
+
+<!-- Header with logo and navigation menu -->
+<header>
+  <div class="logo">
+    <h1>My recipes</h1>
+  </div>
+  <nav>
+    <ul>
+      <li><a th:href="welcome" href="welcome.html"> <img src="/img/home.png" width="20"></a></li>
+      <li><a th:href="all-recipes" href="all-recipes">Всички рецепти</a></li>
+      <li><a th:href="search" href="search">Потърси рецепта</a></li>
+      <li sec:authorize="hasRole('ROLE_USER')"><a th:href="secret-recipes" href="secret-recipes.html" >Тайни рецепти</a></li>
+      <li sec:authorize="hasRole('ROLE_USER')"><a href="/my-recipes">Мои рецепти</a></li>
+      <li sec:authorize="hasRole('ROLE_USER')"><a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a></li>
+      <li sec:authorize="hasRole('ROLE_USER')"><a th:href="account" href="account.html">Профил</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- Main content section with recipe list -->
+<main>
+  <h2>Мои рецепти</h2><br>
+  <span th:text="${recipeDeleted}" style="background-color: Aquamarine"></span>
+  <ul class="recipe-list">
+    <li th:each="recipe: ${recipes}">
+      <img th:if="${recipe.image}" th:src="@{'/recipes/image/{id}'(id=${recipe.id})}"
+           alt="Recipe image" width="300px">
+      <img th:unless="${recipe.image}" src="/img/missing-image.jpg"
+           alt="Recipe image" width="300px">
+      <h3 th:text="${recipe.recipeName}"></h3>
+      <p>Категория</p>
+      <a th:href="@{/view-recipe/{id}(id=${recipe.id})}">Виж рецептата</a>
+    </li>
+  </ul>
+<!--  <div style="font-size: large" class="pagination">-->
+<!--    Общо рецепти [[${totalItems}]] : Страница [[${currentPage}]] от [[${totalPages}]]-->
+<!--    &nbsp; &nbsp; - &nbsp;-->
+<!--    <span th:each="i: ${#numbers.sequence(1, totalPages)}">-->
+<!--            <a th:href="@{'/all-recipes/page/' + ${i}}">[[${i}]]</a>-->
+<!--            &nbsp; &nbsp;-->
+<!--        </span>-->
+<!--  </div>-->
+</main>
+
+<!-- Footer with copyright and links -->
+<footer>
+  <p>&copy; 2023 MyRecipes. Всички права запазени.</p>
+  <nav>
+    <ul>
+      <li><a href="#">Privacy Policy</a></li>
+      <li><a href="#">Terms of Service</a></li>
+    </ul>
+  </nav>
+</footer>
+
+<!-- Hamburger icon and small menu for mobile devices -->
+<div id="menu-icon" onclick="showMenu()">
+  &#9776;
+</div>
+<ul id="small-menu">
+  <li sec:authorize="isAuthenticated()" style="padding-top: 5px;">Добре дошли, <span sec:authentication="name"></span></li>
+  <hr>
+  <li><a th:href="welcome" href="welcome.html"> <img src="/img/home-green.png" width="20"></a></li>
+  <hr>
+  <li><a th:href="all-recipes" href="all-recipes">Всички рецепти</a></li>
+  <hr>
+  <li><a th:href="search" href="search">Потърси рецепта</a></li>
+  <hr>
+  <li sec:authorize="hasRole('ROLE_USER')"><a th:href="secret-recipes" href="secret-recipes.html" >Тайни рецепти</a></li>
+  <hr sec:authorize="hasRole('ROLE_USER')">
+  <li sec:authorize="hasRole('ROLE_USER')"><a href="/my-recipes">Мои рецепти</a></li>
+  <hr sec:authorize="hasRole('ROLE_USER')">
+  <li sec:authorize="hasRole('ROLE_USER')"><a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a></li>
+  <hr sec:authorize="hasRole('ROLE_USER')">
+  <li sec:authorize="hasRole('ROLE_USER')"><a th:href="account" href="account.html">Профил</a></li>
+  <hr sec:authorize="hasRole('ROLE_USER')">
+  <li sec:authorize="!isAuthenticated()"><a href="/login_form">Вход/Регистрация</a></li>
+  <hr sec:authorize="!isAuthenticated()">
+  <li sec:authorize="isAuthenticated()">
+    <form id="logoutFormMob" method="POST" th:action="@{/logout}">
+      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+    </form>
+    <a onclick="document.forms['logoutFormMob'].submit()">Изход</a>
+  </li>
+  <hr sec:authorize="hasRole('ROLE_USER')">
+</ul>
+
+<script src="/js/app.js"></script>
 </body>
 </html>
