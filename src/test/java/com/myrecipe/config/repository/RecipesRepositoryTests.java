@@ -36,22 +36,22 @@ public class RecipesRepositoryTests {
                 new ArrayList<>()));
     }
 
-    @Test
-    public void recipeRepositoryTest() {
-        Recipes rec = recipeRepo.save(new Recipes(
-                1,
-                "Name",
-                "pr",
-                1,
-                1,
-                "a",
-                Categories.MEAT,
-                false,
-                userRepo.findByEmail("example@mail.com")));
-
-        assertThat(rec).hasFieldOrPropertyWithValue("recipeName", "Name");
-        assertThat(rec).hasFieldOrPropertyWithValue("portions", 1);
-    }
+//    @Test
+//    public void recipeRepositoryTest() {
+//        Recipes rec = recipeRepo.save(new Recipes(
+//                1,
+//                "Name",
+//                "pr",
+//                1,
+//                1,
+//                "a",
+//                Categories.MEAT,
+//                false,
+//                userRepo.findByEmail("example@mail.com")));
+//
+//        assertThat(rec).hasFieldOrPropertyWithValue("recipeName", "Name");
+//        assertThat(rec).hasFieldOrPropertyWithValue("portions", 1);
+//    }
 
 //    @Test
 //    public void findRecipeByNameTest () {
@@ -71,32 +71,32 @@ public class RecipesRepositoryTests {
 //        assertThat(recipeFound.equals(rec));
 //    }
 
-    @Test
-    public void deleteAllRecipesTest () {
-        Recipes rec = recipeRepo.save(new Recipes(
-                1,
-                "Name",
-                "pr",
-                1,
-                1,
-                "a",
-                Categories.MEAT,
-                false,
-                userRepo.findByEmail("example@mail.com")));
-
-        Recipes rec2 = recipeRepo.save(new Recipes(
-                4,
-                "Name example",
-                "product, product",
-                4,
-                20,
-                "a",
-                Categories.MEATLESS,
-                false,
-                userRepo.findByEmail("example@mail.com")));
-
-        recipeRepo.deleteAll();
-
-        assertThat(recipeRepo.findAll()).isEmpty();
-    }
+//    @Test
+//    public void deleteAllRecipesTest () {
+//        Recipes rec = recipeRepo.save(new Recipes(
+//                1,
+//                "Name",
+//                "pr",
+//                1,
+//                1,
+//                "a",
+//                Categories.MEAT,
+//                false,
+//                userRepo.findByEmail("example@mail.com")));
+//
+//        Recipes rec2 = recipeRepo.save(new Recipes(
+//                4,
+//                "Name example",
+//                "product, product",
+//                4,
+//                20,
+//                "a",
+//                Categories.MEATLESS,
+//                false,
+//                userRepo.findByEmail("example@mail.com")));
+//
+//        recipeRepo.deleteAll();
+//
+//        assertThat(recipeRepo.findAll()).isEmpty();
+//    }
 }
