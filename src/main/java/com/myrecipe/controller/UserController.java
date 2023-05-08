@@ -1,14 +1,13 @@
 package com.myrecipe.controller;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.myrecipe.service.ImageUtils;
 import org.apache.commons.collections4.ListUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +34,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 public class UserController {
+    private static final int MAX_WIDTH = 720;
+    private static final int MAX_HEIGHT = 405;
     @Autowired
     private UsersService usersService;
 
@@ -57,6 +58,8 @@ public class UserController {
         List<List<Recipes>> recipesRows = ListUtils.partition(recipesList, partitionSize);
 
         model.addAttribute("recipesRows", recipesRows);
+        model.addAttribute("recipes", recipesList);
+
         return "welcome";
     }
 
@@ -99,6 +102,11 @@ public class UserController {
         if(!Pattern.compile(emailRegexPattern).matcher(request.getEmail()).matches() &&
             Pattern.compile(emailRegexSqlInjection).matcher(request.getEmail()).matches()) {
             model.addAttribute("errEmail", "Невалиден имейл!");
+            return "registration";
+        }
+
+        if(request.getPassword().isBlank()) {
+            model.addAttribute("errPass", "Моля въведете парола!");
             return "registration";
         }
 
@@ -191,9 +199,20 @@ public class UserController {
         String authentication = securityService.getAuthentication();
         Users user = usersService.getByEmail(authentication);
 
+        if(request.getCategory() == null || request.getPortions() == null || request.getRecipeName().isBlank() ||
+                request.getProducts().isBlank() || request.getCookingSteps().isBlank() || request.getCookingTime() == null) {
+            model.addAttribute("errorMessage", "Попълнете всички полета!");
+            return "add-recipe";
+        }
+
         if (!imageFile.isEmpty()) {
+            if (!imageFile.getContentType().equals("image/jpeg")) {
+                model.addAttribute("errorMessage", "Моля изберете изображение с разширение \".jpg\"!");
+                return "add-recipe";
+            }
             try {
-                request.setImage(imageFile.getBytes());
+                byte[] imageBytes = ImageUtils.resizeImage(imageFile, MAX_WIDTH, MAX_HEIGHT);
+                request.setImage(imageBytes);
             } catch (IOException e) {
                 // Handle exception
                 model.addAttribute("errorMessage", "Грешка при качването на изображение");
@@ -255,7 +274,7 @@ public class UserController {
                 }
             }
         } else {
-            model.addAttribute("message", "Потърсете по категория или по име");
+            model.addAttribute("message", "Потърсете по категория или по ключова дума");
         }
 
         return "search";
@@ -266,13 +285,19 @@ public class UserController {
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
         }
+
+        Users currentUser = usersService.getByEmail(securityService.getAuthentication());
         Recipes recipe = null;
+
         try{
             recipe = recipesService.getById(id);
         } catch (RecordNotFoundException e) {
             return "redirect:/";
         }
 
+        if(!currentUser.getId().equals(recipe.getUser().getId())){
+            return "redirect:/";
+        }
         model.addAttribute("recipe", recipe);
 
         model.addAttribute("request", new UsersRequest());
@@ -287,8 +312,7 @@ public class UserController {
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
         }
-        Users currentUser;
-        currentUser = usersService.getByEmail(securityService.getAuthentication());
+        Users currentUser = usersService.getByEmail(securityService.getAuthentication());
 
         String pass = req.getParameter("passwordConfirm");
 
@@ -302,7 +326,9 @@ public class UserController {
         }
 
         if(!encoder.matches(pass, currentUser.getPassword())) {
-            return "welcome";
+            model.addAttribute("errorMessage", "Грешна парола!");
+            model.addAttribute("recipe", recipesService.getById(id));
+            return "delete-recipe";
         }
 
         recipesService.deleteRecipe(id);
@@ -317,8 +343,7 @@ public class UserController {
             return "redirect:/";
         }
 
-        Users user;
-        user = usersService.getByEmail(securityService.getAuthentication());
+        Users user = usersService.getByEmail(securityService.getAuthentication());
 
         model.addAttribute("currentUser", user);
         return "account";
@@ -381,6 +406,11 @@ public class UserController {
         currentUser.setEmail(securityService.getAuthentication());
         currentUser.setPassword(password);
 
+        if(password.isBlank()) {
+            model.addAttribute("errorMessage", "Моля въведете парола!");
+            return "secret-recipes";
+        }
+
         // Verify the entered password against the stored password for the logged-in user
         if (securityService.isAuthenticated() && encoder.matches(password, loggedInUser.getPassword())) {
             // If password is correct, retrieve private recipes from the database
@@ -389,7 +419,7 @@ public class UserController {
                 model.addAttribute("recipes", privateRecipes);
             }
             catch (RecordNotFoundException e) {
-                model.addAttribute("errorMessage", "Нямате тайни рецепти. Добави?.");
+                model.addAttribute("errorMessage", "Не сте добавили тайни рецепти.");
             }
 
             // Add the list of private recipes to the model to be displayed in the view

@@ -1,123 +1,135 @@
 <!DOCTYPE html>
 <html lang="bg" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
-  <meta charset="UTF-8">
   <title>Потърси рецепта | MyRecipes</title>
-  <link rel="stylesheet" href="/css/style.css"/>
+
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-<div class="body-container">
-  <div class="user-account" sec:authorize="!isAuthenticated()">
-    <a href="/login_form">Вход</a>
-    или
-    <a href="/registration">Регистрация</a>
-  </div>
+<div class="user-account" id="user-account" sec:authorize="!isAuthenticated()">
+  <a href="/login_form">Вход</a>
+  или
+  <a href="/registration">Регистрация</a>
+</div>
 
-  <div class="user-account" sec:authorize="isAuthenticated()">
-    <form id="logoutForm" method="POST" th:action="@{/logout}">
+<div class="user-account" sec:authorize="isAuthenticated()">
+  <form id="logoutForm" method="POST" th:action="@{/logout}">
+    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+  </form>
+  Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Изход</a>
+</div>
+
+<!-- Header with logo and navigation menu -->
+<header>
+  <div class="logo">
+    <h1>My recipes</h1>
+  </div>
+  <nav>
+    <ul>
+      <li><a th:href="welcome" href="welcome.html"> <img src="/img/home.png" width="20"></a></li>
+      <li><a th:href="all-recipes" href="all-recipes">Всички рецепти</a></li>
+      <li><a th:href="search" href="search">Потърси рецепта</a></li>
+      <li sec:authorize="hasRole('ROLE_USER')"><a th:href="secret-recipes" href="secret-recipes.html" >Тайни рецепти</a></li>
+      <li sec:authorize="hasRole('ROLE_USER')"><a href="/my-recipes">Мои рецепти</a></li>
+      <li sec:authorize="hasRole('ROLE_USER')"><a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a></li>
+      <li sec:authorize="hasRole('ROLE_USER')"><a th:href="account" href="account.html">Профил</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- Main content section with recipe list -->
+<main>
+  <h2>Намерете рецепта</h2><br>
+
+  <div class="forms">
+    <form th:action="@{/search}" method="get">
+      <span th:text="${message}" style="font-size: 18px; margin-bottom: 15px;"></span><br>
+
+      <input name="keyword" type="text" th:value="${keyword}" placeholder="Въведете ключова дума..." style="margin:5px;">
+      <input name="submName" type="Submit" value="Търси по ключова дума">
+      <br>
+      <span th:text="${error}" style="color: red;"></span>
+      <br><br>
+    </form>
+
+
+    <form th:action="@{/search}" method="get">
+      <input name="cat" list="cat" placeholder="Избери категория"
+             pattern="MEAT|MEATLESS|DESSERTS|ALAMINUTES|SOUPS|SALADS|DOUGH" style="margin:5px">
+      <datalist id="cat">
+        <option value="MEAT">Месни</option>
+        <option value="MEATLESS">Безмесни</option>
+        <option value="DESSERTS">Десерти</option>
+        <option value="ALAMINUTES">Аламинути</option>
+        <option value="SOUPS">Супи</option>
+        <option value="SALADS">Салати</option>
+        <option value="DOUGH">Тестени</option>
+      </datalist>
+
+      <input name="submCategory" type="Submit" value="Търси по категория">
+      <br>
+      <span th:text="${errorCat}" style="color: red;"></span>
+    </form>
+  </div>
+  <hr width="60%" height="3px"><br>
+
+  <ul class="recipe-list" >
+    <li th:each="recipe: ${recipesFound}">
+      <img th:if="${recipe.image}" th:src="@{'/recipes/image/{id}'(id=${recipe.id})}"
+           alt="Recipe image" width="300px">
+      <img th:unless="${recipe.image}" src="/img/missing-image.jpg"
+           alt="Recipe image" width="300px">
+      <h3 th:text="${recipe.recipeName}"></h3>
+      <p>Категория</p>
+      <a th:href="@{/view-recipe/{id}(id=${recipe.id})}">Виж рецептата</a>
+    </li>
+  </ul>
+</main>
+
+<!-- Footer with copyright and links -->
+<footer>
+  <p>&copy; 2023 MyRecipes. Всички права запазени.</p>
+  <nav>
+    <ul>
+      <li><a href="#">Privacy Policy</a></li>
+      <li><a href="#">Terms of Service</a></li>
+    </ul>
+  </nav>
+</footer>
+
+<!-- Hamburger icon and small menu for mobile devices -->
+<div id="menu-icon" onclick="showMenu()">
+  &#9776;
+</div>
+<ul id="small-menu">
+  <li sec:authorize="isAuthenticated()" style="padding-top: 5px;">Добре дошли, <span sec:authentication="name"></span></li>
+  <hr>
+  <li><a th:href="welcome" href="welcome.html"> <img src="/img/home-green.png" width="20"></a></li>
+  <hr>
+  <li><a th:href="all-recipes" href="all-recipes">Всички рецепти</a></li>
+  <hr>
+  <li><a th:href="search" href="search">Потърси рецепта</a></li>
+  <hr>
+  <li sec:authorize="hasRole('ROLE_USER')"><a th:href="secret-recipes" href="secret-recipes.html" >Тайни рецепти</a></li>
+  <hr sec:authorize="hasRole('ROLE_USER')">
+  <li sec:authorize="hasRole('ROLE_USER')"><a href="/my-recipes">Мои рецепти</a></li>
+  <hr sec:authorize="hasRole('ROLE_USER')">
+  <li sec:authorize="hasRole('ROLE_USER')"><a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a></li>
+  <hr sec:authorize="hasRole('ROLE_USER')">
+  <li sec:authorize="hasRole('ROLE_USER')"><a th:href="account" href="account.html">Профил</a></li>
+  <hr sec:authorize="hasRole('ROLE_USER')">
+  <li sec:authorize="!isAuthenticated()"><a href="/login_form">Вход/Регистрация</a></li>
+  <hr sec:authorize="!isAuthenticated()">
+  <li sec:authorize="isAuthenticated()">
+    <form id="logoutFormMob" method="POST" th:action="@{/logout}">
       <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
     </form>
-    Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Изход</a>
-  </div>
+    <a onclick="document.forms['logoutFormMob'].submit()">Изход</a>
+  </li>
+  <hr sec:authorize="hasRole('ROLE_USER')">
+</ul>
 
-  <div class="top-menu">
-    <a th:href="welcome" href="welcome.html"> <img src="/img/home.png" width="20"></a>
-    <a th:href="all-recipes" href="all-recipes.html">Всички рецепти</a>
-    <a href="/search">Потърси рецепта</a>
-    <div sec:authorize="hasRole('ROLE_USER')" >
-      <a th:href="secret-recipes" href="secret-recipes.html" >Тайни рецепти</a>
-      <a href="/my-recipes">Мои рецепти</a>
-      <a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a>
-<!--      <а th:href="account" href="account.html">Профил</а>-->
-    </div>
-  </div>
-
-  <div class="content">
-    <div class="forms">
-      <form th:action="@{/search}" method="get">
-        <h3>Намерете рецепта</h3> <br>
-        <span th:text="${message}"></span><br>
-
-        <input name="keyword" type="text" th:value="${keyword}" placeholder="Въведете ключова дума...">
-        <input name="submName" type="Submit" value="Търси по ключова дума">
-        <br>
-        <span th:text="${error}"></span>
-        <br><br>
-      </form>
-
-
-      <form th:action="@{/search}" method="get">
-        <input name="cat" list="cat" placeholder="Избери категория"
-               pattern="MEAT|MEATLESS|DESSERTS|ALAMINUTES|SOUPS|SALADS|DOUGH">
-        <datalist id="cat">
-          <option value="MEAT">Месни</option>
-          <option value="MEATLESS">Безмесни</option>
-          <option value="DESSERTS">Десерти</option>
-          <option value="ALAMINUTES">Аламинути</option>
-          <option value="SOUPS">Супи</option>
-          <option value="SALADS">Салати</option>
-          <option value="DOUGH">Тестени</option>
-        </datalist>
-
-        <input name="submCategory" type="Submit" value="Търси по категория">
-        <br>
-        <span th:text="${errorCat}"></span>
-      </form>
-
-<!--      <a th:href="@{/view-recipe/__${recipe.id}__}" th:text="${recipe.recipeName}"/>-->
-
-
-    </div>
-
-    <table>
-      <tbody>
-      <tr th:each="recipe: ${recipesFound}">
-        <td>
-          <a th:href="@{/view-recipe/__${recipe.id}__}" th:text="${recipe.recipeName}"/>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-
-    <div sec:authorize="hasRole('ROLE_ADMIN')">
-      This content is only shown to administrators.§§
-    </div>
-
-    <div sec:authorize="hasRole('ROLE_USER')">
-      This content is only shown to users.
-    </div>
-
-  </div>
-</div>
-<script language="JavaScript">
-function matchPassword() {
-  var pw1 = document.getElementById("pass").value;
-  var pw2 = document.getElementById("cPass").value;
-  console.log(pw1);
-  console.log(pw2);
-  if(pw1 == pw2)
-  {
-    document.getElementById("subm").disabled=false;
-    document.getElementById("pass").style.borderColor = "black";
-    document.getElementById("cPass").style.borderColor = "black";
-        document.getElementById("Message").innerHTML = "";
-  } else {
-    document.getElementById("pass").style.borderColor = "tomato";
-    document.getElementById("cPass").style.borderColor = "tomato";
-    document.getElementById("subm").disabled=true;
-    document.getElementById("Message").innerHTML = "Passwords do NOT match!";
-  }
-}
-
-function showPassword() {
-   var x = document.getElementById("pass");
-     if (x.type === "password") {
-         x.type = "text";
-     } else {
-        x.type = "password";
-     }
-}
-</script>
-
+<script src="/js/app.js"></script>
 </body>
 </html>

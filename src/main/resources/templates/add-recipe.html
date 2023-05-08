@@ -1,98 +1,135 @@
 <!DOCTYPE html>
 <html lang="bg" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="UTF-8">
     <title>Създай рецепта | MyRecipes</title>
-  <link rel="stylesheet" href="/css/style.css"/>
+
+    <link rel="stylesheet" href="/css/styles.css"/>
+    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-<div class="body-container">
-  <div class="user-account" sec:authorize="!isAuthenticated()">
+<div class="user-account" id="user-account" sec:authorize="!isAuthenticated()">
     <a href="/login_form">Вход</a>
     или
     <a href="/registration">Регистрация</a>
-  </div>
-
-  <div class="user-account" sec:authorize="isAuthenticated()">
-    <form id="logoutForm" method="POST" th:action="@{/logout}">
-      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-    </form>
-    Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Излез</a>
-  </div>
-
-  <div class="top-menu">
-    <a th:href="welcome" href="welcome.html"> <img src="/img/home.png" width="20"></a>
-    <a th:href="all-recipes" href="all-recipes.html">Всички рецепти</a>
-    <a href="/search">Потърси рецепта</a>
-    <div sec:authorize="hasRole('ROLE_USER')" >
-        <a th:href="secret-recipes" href="secret-recipes.html" >Тайни рецепти</a>
-      <a href="/my-recipes">Мои рецепти</a>
-      <a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a>
-        <a th:href="account" href="account.html">Профил</a>
-    </div>
-  </div>
-
-  <div class="content">
-    <h3>Добави нова рецепта</h3>
-    <div class="forms">
-      <form th:object="${recipe}" method="post" enctype="multipart/form-data">
-          <legend>Информация за рецептата</legend><br>
-          <input name="recipeName" type="text" required placeholder="Име на рецептата...">
-          <!--      <br><br>-->
-
-          <input name="products" type="text" required placeholder="Продукти...">
-          <br><br>
-
-          <input name="portions" type="number" min="0" required placeholder="Порции">
-          <!--      <br><br>-->
-
-          <input name="cookingTime" type="number" min="0" required placeholder="Време за готвене...">
-          <br><br>
-
-          <input name="category" list="category" required placeholder="Избери категория"
-                 pattern="MEAT|MEATLESS|DESSERTS|ALAMINUTES|SOUPS|SALADS|DOUGH">
-          <br><br>
-
-          <textarea name="cookingSteps" required placeholder="Стъпки за приготвяне..."></textarea>
-          <!--      <br><br>-->
-
-          <!--      <input name="category" type="text" required placeholder="Choose category">-->
-
-          <datalist id="category">
-            <option value="MEAT">Месни</option>
-            <option value="MEATLESS">Безмесни</option>
-            <option value="DESSERTS">Десерти</option>
-            <option value="ALAMINUTES">Аламинути</option>
-            <option value="SOUPS">Супи</option>
-            <option value="SALADS">Салати</option>
-            <option value="DOUGH">Тестени</option>
-          </datalist>
-          <br><br>
-
-          <label>Тайна ли е рецептата</label><br>
-          <input type="radio" name="isPrivate" value="false" checked>Не
-          <input type="radio" name="isPrivate" value="true">Да
-          <br><br>
-
-          <input type="file" name="imageFile">
-          <br><br>
-
-          <input type="Submit" value="Създай рецепта">
-      </form>
-    </div>
-
-    <div th:if="${errorMessage}" th:text="${errorMessage}" style="color: red;"></div>
-
-      <div sec:authorize="hasRole('ROLE_ADMIN')">
-      This content is only shown to administrators.§§
-    </div>
-
-    <div sec:authorize="hasRole('ROLE_USER')">
-      This content is only shown to users.
-    </div>
-  </div>
-
 </div>
 
+<div class="user-account" sec:authorize="isAuthenticated()">
+    <form id="logoutForm" method="POST" th:action="@{/logout}">
+        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+    </form>
+    Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Изход</a>
+</div>
+
+<!-- Header with logo and navigation menu -->
+<header>
+    <div class="logo">
+        <h1>My recipes</h1>
+    </div>
+    <nav>
+        <ul>
+            <li><a th:href="welcome" href="welcome.html"> <img src="/img/home.png" width="20"></a></li>
+            <li><a th:href="all-recipes" href="all-recipes">Всички рецепти</a></li>
+            <li><a th:href="search" href="search">Потърси рецепта</a></li>
+            <li sec:authorize="hasRole('ROLE_USER')"><a th:href="secret-recipes" href="secret-recipes.html" >Тайни рецепти</a></li>
+            <li sec:authorize="hasRole('ROLE_USER')"><a href="/my-recipes">Мои рецепти</a></li>
+            <li sec:authorize="hasRole('ROLE_USER')"><a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a></li>
+            <li sec:authorize="hasRole('ROLE_USER')"><a th:href="account" href="account.html">Профил</a></li>
+        </ul>
+    </nav>
+</header>
+
+<!-- Main content section with recipe list -->
+<main>
+        <h2>Добавяне на рецепта</h2><br>
+
+    <hr width="60%" size="3" style="margin-top: 20px;"><br>
+    <div class="forms">
+        <form th:object="${recipe}" method="post" enctype="multipart/form-data">
+            <span style="font-size: 22px;">Информация за рецептата</span> <br>
+            <input name="recipeName" type="text" required placeholder="Име на рецептата..."><br>
+
+            <input name="portions" type="number" min="0" required placeholder="Порции"><br>
+
+            <input name="cookingTime" type="number" min="0" required placeholder="Време за готвене...">
+            <br>
+
+            <input name="category" list="category" required placeholder="Избери категория"
+                   pattern="MEAT|MEATLESS|DESSERTS|ALAMINUTES|SOUPS|SALADS|DOUGH">
+            <br>
+
+            <textarea name="products" required placeholder="Продукти..."></textarea>
+            <br>
+
+            <textarea name="cookingSteps" required placeholder="Стъпки за приготвяне..."></textarea>
+
+            <datalist id="category">
+                <option value="MEAT">Месни</option>
+                <option value="MEATLESS">Безмесни</option>
+                <option value="DESSERTS">Десерти</option>
+                <option value="ALAMINUTES">Аламинути</option>
+                <option value="SOUPS">Супи</option>
+                <option value="SALADS">Салати</option>
+                <option value="DOUGH">Тестени</option>
+            </datalist>
+            <br><br>
+
+            <label>Тайна ли е рецептата</label><br>
+            <input type="radio" name="isPrivate" value="false" checked>Не
+            <input type="radio" name="isPrivate" value="true">Да
+            <br><br>
+
+            <input type="file" name="imageFile" accept=".jpg" required>
+            <br><span th:text="${errorMessage}" style="color: red;"></span><br>
+
+            <input type="Submit" value="Създай рецепта">
+        </form>
+    </div>
+    <hr width="60%" size="3"><br>
+</main>
+
+<!-- Footer with copyright and links -->
+<footer>
+    <p>&copy; 2023 MyRecipes. Всички права запазени.</p>
+    <nav>
+        <ul>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+        </ul>
+    </nav>
+</footer>
+
+<!-- Hamburger icon and small menu for mobile devices -->
+<div id="menu-icon" onclick="showMenu()">
+    &#9776;
+</div>
+<ul id="small-menu">
+    <li sec:authorize="isAuthenticated()" style="padding-top: 5px;">Добре дошли, <span sec:authentication="name"></span></li>
+    <hr>
+    <li><a th:href="welcome" href="welcome.html"> <img src="/img/home-green.png" width="20"></a></li>
+    <hr>
+    <li><a th:href="all-recipes" href="all-recipes">Всички рецепти</a></li>
+    <hr>
+    <li><a th:href="search" href="search">Потърси рецепта</a></li>
+    <hr>
+    <li sec:authorize="hasRole('ROLE_USER')"><a th:href="secret-recipes" href="secret-recipes.html" >Тайни рецепти</a></li>
+    <hr sec:authorize="hasRole('ROLE_USER')">
+    <li sec:authorize="hasRole('ROLE_USER')"><a href="/my-recipes">Мои рецепти</a></li>
+    <hr sec:authorize="hasRole('ROLE_USER')">
+    <li sec:authorize="hasRole('ROLE_USER')"><a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a></li>
+    <hr sec:authorize="hasRole('ROLE_USER')">
+    <li sec:authorize="hasRole('ROLE_USER')"><a th:href="account" href="account.html">Профил</a></li>
+    <hr sec:authorize="hasRole('ROLE_USER')">
+    <li sec:authorize="!isAuthenticated()"><a href="/login_form">Вход/Регистрация</a></li>
+    <hr sec:authorize="!isAuthenticated()">
+    <li sec:authorize="isAuthenticated()">
+        <form id="logoutFormMob" method="POST" th:action="@{/logout}">
+            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        </form>
+        <a onclick="document.forms['logoutFormMob'].submit()">Изход</a>
+    </li>
+    <hr sec:authorize="hasRole('ROLE_USER')">
+</ul>
+
+<script src="/js/app.js"></script>
 </body>
 </html>

@@ -1,10 +1,9 @@
 body {
-  font-family: Segoe UI,Arial,sans-serif;
-  margin: 0;
+     font-family: Segoe UI,Arial,sans-serif;
+     margin: 0;
 }
 
 .body-container {
-    width: 70%;
     margin: auto;
     margin-top: 0px;
     margin-bottom: 35px;
@@ -17,12 +16,15 @@ body {
 }
 
 .content {
-    padding-top: 102px;
+    width: 70%;
     padding: 70px;
+    padding-top: 30px;
+    margin: auto;
     font-size:20px;
    	color: #595959;
    	text-align: center;
    	height: fit-content;
+    border: 1px solid #787878;
 }
 
 .top-menu {
@@ -33,18 +35,18 @@ body {
 }
 
 .top-menu a {
-  float: left;
-  color: #ffffff;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
-  border-radius: 35px;
-  font-size: 17px;
+    float: left;
+    color: #ffffff;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    border-radius: 35px;
+    font-size: 17px;
 }
 
 .top-menu a:hover {
-  background-color: #559b8d;
-  color: #f2f2f2;
+    background-color: #559b8d;
+    color: #f2f2f2;
 }
 
 .user-account {
@@ -77,11 +79,11 @@ body {
     color: #1abc9c;
     border: 1px solid #1abc9c;
 }
-
+/*** Pagination ***/
 .pagination {
-  text-align: center;
-  bottom: 0;
-  margin: 20px;
+    text-align: center;
+    bottom: 0;
+    margin: 20px;
 }
 
 .pagination a{
@@ -187,32 +189,31 @@ textarea{
 }
 
 .leftSpl {
-padding-top: 102px;
+    padding-top: 102px;
     padding: 20px;
     font-size: 20px;
-   	color: #595959;
-   	height: fit-content;
+    color: #595959;
+    height: fit-content;
 
-  width: fit-content;
-  text-align: center;
-  float: left;
-  border: 1px solid #787878;
-  margin: auto;
-  margin-left: 70px;
+    width: fit-content;
+    text-align: center;
+    float: right;
+    border: 1px solid #787878;
+    margin: auto;
 }
 
 .rightSpl {
-padding-top: 102px;
+    padding-top: 102px;
     padding: 20px;
     font-size: 18px;
    	color: #595959;
 
    	height: fit-content;
 
-  right: 0;
-  width: 50%;
-  text-align: left;
-  border: 1px solid #787878;
+    right: 0;
+    width: 50%;
+    text-align: left;
+    border: 1px solid #787878;
 }
 
 .deleteButton a:hover{
