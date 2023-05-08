@@ -224,7 +224,7 @@ public class MyRecipeService implements RecipesService{
 
     @Override
     public Page<Recipes> getPage(int pageNumber) {
-        Pageable pageable = PageRequest.of(pageNumber-1,5);
+        Pageable pageable = PageRequest.of(pageNumber-1,6);
         return recipesRepository.findAllPublicRecipes(pageable);
     }
 }
