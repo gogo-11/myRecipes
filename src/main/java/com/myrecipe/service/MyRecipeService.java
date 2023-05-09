@@ -1,6 +1,7 @@
 package com.myrecipe.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -226,5 +227,62 @@ public class MyRecipeService implements RecipesService{
     public Page<Recipes> getPage(int pageNumber) {
         Pageable pageable = PageRequest.of(pageNumber-1,6);
         return recipesRepository.findAllPublicRecipes(pageable);
+    }
+
+    @Override
+    public Optional<Recipes> recipeUpdate(Integer id, RecipesRequest request) {
+        Optional<Recipes> recipe = recipesRepository.findById(id);
+
+        if(recipe.isPresent()){
+            if(request.getRecipeName().isBlank() || request.getRecipeName() == null){
+                recipe.get().setRecipeName(recipesRepository.getReferenceById(id).getRecipeName());
+            } else {
+                recipe.get().setRecipeName(request.getRecipeName());
+            }
+
+            if(request.getPortions().toString().isBlank() || request.getPortions() == null){
+                recipe.get().setPortions(recipesRepository.getReferenceById(id).getPortions());
+            } else {
+                recipe.get().setPortions(request.getPortions());
+            }
+
+            if(request.getCookingTime().toString().isBlank() || request.getCookingTime() == null){
+                recipe.get().setCookingTime(recipesRepository.getReferenceById(id).getCookingTime());
+            } else {
+                recipe.get().setCookingTime(request.getCookingTime());
+            }
+
+            if(request.getCookingSteps().isBlank() || request.getCookingSteps() == null){
+                recipe.get().setCookingSteps(recipesRepository.getReferenceById(id).getCookingSteps());
+            } else {
+                recipe.get().setCookingSteps(request.getCookingSteps());
+            }
+
+            if(request.getCategory().toString().isBlank() || request.getCategory() == null){
+                recipe.get().setCategory(recipesRepository.getReferenceById(id).getCategory());
+            } else {
+                recipe.get().setCategory(request.getCategory());
+            }
+
+            if(request.getProducts().isBlank() || request.getProducts() == null){
+                recipe.get().setProducts(recipesRepository.getReferenceById(id).getProducts());
+            } else {
+                recipe.get().setProducts(request.getProducts());
+            }
+
+            if(request.getImage().length == 0|| request.getImage() == null){
+                recipe.get().setImage(recipesRepository.getReferenceById(id).getImage());
+            } else {
+                recipe.get().setImage(request.getImage());
+            }
+
+            recipe.get().setIsPrivate(request.getIsPrivate());
+
+            recipesRepository.save(recipe.get());
+
+            return recipe;
+        } else {
+            throw new RecordNotFoundException("User with the specified ID not found");
+        }
     }
 }

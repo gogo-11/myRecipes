@@ -65,7 +65,7 @@
                     Категория:
                     <span th:text="${recipe.category}"></span>
                     <br>
-                    <span sec:authorize="hasRole('ROLE_USER')" th:if="${user.email} == ${userByRecipe}"><a href="#news">Редактирай</a></span>
+                    <span sec:authorize="hasRole('ROLE_USER')" th:if="${user.email} == ${userByRecipe}"><a th:href="@{/edit-recipe/__${recipe.id}__}">Редактирай</a></span>
                     <span sec:authorize="isAuthenticated()"
                           th:if="${user.email} == ${userByRecipe} or ${#authorization.expression('hasRole(''ADMIN'')')}"
                           class="deleteButton">
