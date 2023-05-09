@@ -34,8 +34,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 public class UserController {
-    private static final int MAX_WIDTH = 720;
-    private static final int MAX_HEIGHT = 405;
+    private static final int MAX_WIDTH = 1920;
+    private static final int MAX_HEIGHT = 1080;
     @Autowired
     private UsersService usersService;
 
@@ -295,7 +295,7 @@ public class UserController {
             return "redirect:/";
         }
 
-        if(!currentUser.getId().equals(recipe.getUser().getId())){
+        if(!currentUser.getId().equals(recipe.getUser().getId()) && !currentUser.getRole().equals(RolesEn.ADMIN)){
             return "redirect:/";
         }
         model.addAttribute("recipe", recipe);
@@ -321,7 +321,7 @@ public class UserController {
 
         Users recipeOwner = recipesService.getById(id).getUser();
 
-        if(!securityService.getAuthentication().equals(recipeOwner.getEmail())) {
+        if(!currentUser.getEmail().equals(recipeOwner.getEmail()) && !currentUser.getRole().equals(RolesEn.ADMIN)) {
             return "welcome";
         }
 
@@ -399,6 +399,10 @@ public class UserController {
 
     @PostMapping("/secret-recipes")
     public String viewPrivateRecipes(@RequestParam("password") String password, Model model) {
+        if(!securityService.isAuthenticated()){
+            return "redirect:/welcome";
+        }
+
         // Get the currently logged-in user
         Users loggedInUser = usersService.getByEmail(securityService.getAuthentication());
 
@@ -432,4 +436,72 @@ public class UserController {
         }
     }
 
+    @GetMapping("/edit-recipe/{id}")
+    public String showEditRecipePage(@PathVariable("id") Integer id, Model model) {
+        if(!securityService.isAuthenticated()){
+            return "redirect:/welcome";
+        }
+
+        Recipes recipe = null;
+        Users currentUser = usersService.getByEmail(securityService.getAuthentication());
+
+        try{
+            recipe = recipesService.getById(id);
+        } catch (RecordNotFoundException e) {
+            return "redirect:/";
+        }
+
+        if(!currentUser.getId().equals(recipe.getUser().getId())){
+            return "redirect:/";
+        }
+
+        model.addAttribute("recipe", recipesService.getById(id));
+
+        return "edit-recipe";
+    }
+
+    @PostMapping("/edit-recipe/{id}")
+    public String updateRecipeInfo(@ModelAttribute(name="request") RecipesRequest request,
+                                   @PathVariable("id") Integer id, @RequestParam("imageFile") MultipartFile imageFile,
+                                   BindingResult bindingResult, Model model) {
+        if (!securityService.isAuthenticated()) {
+            return "redirect:/";
+        }
+        if (bindingResult.hasErrors()) {
+            return "account";
+        }
+
+        Users user = usersService.getByEmail(securityService.getAuthentication());
+        Recipes currentRecipe = recipesService.getById(id);
+
+        model.addAttribute("recipe", currentRecipe);
+
+        if(request.getCategory() == null || request.getPortions() == null || request.getRecipeName().isBlank() ||
+                request.getProducts().isBlank() || request.getCookingSteps().isBlank() || request.getCookingTime() == null) {
+            model.addAttribute("errorMessage", "Попълнете всички полета!");
+            return "add-recipe";
+        }
+
+        if (!imageFile.isEmpty()) {
+            if (!imageFile.getContentType().equals("image/jpeg") && !imageFile.getContentType().equals("image/jpg")) {
+                model.addAttribute("errorMessage", "Моля изберете изображение с разширение \".jpg\"!");
+                return "edit-recipe";
+            }
+            try {
+                byte[] imageBytes = ImageUtils.resizeImage(imageFile, MAX_WIDTH, MAX_HEIGHT);
+                request.setImage(imageBytes);
+//                request.setImage(imageFile.getBytes());
+            } catch (IOException e) {
+                // Handle exception
+                model.addAttribute("errorMessage", "Грешка при качването на изображение");
+                return "edit-recipe";
+            }
+        } else {
+            request.setImage(currentRecipe.getImage());
+        }
+
+        recipesService.recipeUpdate(id, request);
+
+        return "redirect:/my-recipes";
+    }
 }

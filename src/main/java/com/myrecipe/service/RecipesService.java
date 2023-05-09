@@ -1,7 +1,9 @@
 package com.myrecipe.service;
 
 import java.util.List;
+import java.util.Optional;
 
+import com.myrecipe.entities.Users;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -22,5 +24,6 @@ public interface RecipesService {
     List<Recipes> getUsersAllPrivateRecipes(UsersRequest usersRequest);
     List<Recipes> getUsersAllPublicRecipes(Integer id);
     Page<Recipes> getPage(int pageNo);
+    Optional<Recipes> recipeUpdate(Integer id, RecipesRequest request);
     void deleteRecipe (Integer recipeId);
 }

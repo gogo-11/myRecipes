@@ -48,3 +48,33 @@ function showMenu() {
             x.type = "password";
          }
     }
+    {
+    const recipeName = document.getElementById("recipeName");
+    const portions = document.getElementById("portions");
+    const cookingTime = document.getElementById("cookingTime");
+    const cookingSteps = document.getElementById("cookingSteps");
+    const category = document.getElementById("category");
+    const products = document.getElementById("products");
+    const button = document.getElementById("button");
+
+        function checkInputs() {
+              if (recipeName.value !== recipeName.defaultValue ||
+                  portions.value !== portions.defaultValue ||
+                  cookingTime.value !== cookingTime.defaultValue ||
+                  cookingSteps.value !== cookingSteps.defaultValue ||
+                  category.value !== category.defaultValue ||
+                  products.value !== products.defaultValue) {
+                button.disabled = false;
+              } else {
+                button.disabled = true;
+              }
+            };
+
+    recipeName.addEventListener("input", checkInputs);
+    portions.addEventListener("input", checkInputs);
+    cookingTime.addEventListener("input", checkInputs);
+    cookingSteps.addEventListener("input", checkInputs);
+    category.addEventListener("input", checkInputs);
+    products.addEventListener("input", checkInputs);
+    }
+
