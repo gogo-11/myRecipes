@@ -6,8 +6,8 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-import com.myrecipe.service.ImageUtils;
 import org.apache.commons.collections4.ListUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.myrecipe.entities.Categories;
 import com.myrecipe.entities.Recipes;
@@ -25,12 +30,10 @@ import com.myrecipe.entities.Users;
 import com.myrecipe.entities.requests.RecipesRequest;
 import com.myrecipe.entities.requests.UsersRequest;
 import com.myrecipe.exceptions.RecordNotFoundException;
-import com.myrecipe.repository.RecipesRepository;
 import com.myrecipe.security.SecurityService;
 import com.myrecipe.service.RecipesService;
 import com.myrecipe.service.UsersService;
-import org.springframework.web.multipart.MultipartFile;
-
+import com.myrecipe.service.ImageUtils;
 
 @Controller
 public class UserController {
@@ -47,9 +50,6 @@ public class UserController {
 
     @Autowired
     private PasswordEncoder encoder;
-
-    @Autowired
-    private RecipesRepository recipesRepo;
 
     @GetMapping({"/","/welcome"})
     public String homePage (Model model) {
@@ -154,13 +154,18 @@ public class UserController {
     }
 
     @GetMapping("/view-recipe/{id}")
-    public String showRecipeById(@PathVariable("id") Integer id, Model model) {
+    public String showRecipeById(@PathVariable("id") Integer id, Model model, HttpSession session) {
         Recipes recipe = null;
         try{
             recipe = recipesService.getById(id);
         } catch (RecordNotFoundException e) {
             return "redirect:/";
         }
+        String valid = (String) session.getAttribute("valid");
+        if(recipe.getIsPrivate() && (valid == null || valid.isBlank())) {
+            return "redirect:/";
+        }
+
         String products = recipe.getProducts().replace(',','\n');
 //        String[] prodArr = recipe.getProducts().split(",");
 //        List<String> prodList = Arrays.asList(prodArr);
@@ -389,17 +394,25 @@ public class UserController {
     }
 
     @GetMapping("/secret-recipes")
-    public String showSecretRecipes(Model model) {
+    public String showSecretRecipes(Model model, HttpSession session) {
         if(!securityService.isAuthenticated()){
             return "redirect:/welcome";
         }
+        if(usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)){
+            return "redirect:/welcome";
+        }
+        session.setAttribute("valid","Valid request");
+
         model.addAttribute("recipe", new Recipes());
         return "secret-recipes";
     }
 
     @PostMapping("/secret-recipes")
-    public String viewPrivateRecipes(@RequestParam("password") String password, Model model) {
+    public String viewPrivateRecipes(@RequestParam("password") String password, Model model, HttpSession session) {
         if(!securityService.isAuthenticated()){
+            return "redirect:/welcome";
+        }
+        if(password.isBlank()){
             return "redirect:/welcome";
         }
 
@@ -409,6 +422,10 @@ public class UserController {
         UsersRequest currentUser = new UsersRequest();
         currentUser.setEmail(securityService.getAuthentication());
         currentUser.setPassword(password);
+
+        if(loggedInUser.getRole().equals(RolesEn.ADMIN)){
+            return "redirect:/welcome";
+        }
 
         if(password.isBlank()) {
             model.addAttribute("errorMessage", "Моля въведете парола!");
@@ -426,14 +443,14 @@ public class UserController {
                 model.addAttribute("errorMessage", "Не сте добавили тайни рецепти.");
             }
 
-            // Add the list of private recipes to the model to be displayed in the view
+            session.setAttribute("valid", "Valid request");
 
-            return "secret-recipes";
+            // Add the list of private recipes to the model to be displayed in the view
         } else {
             // If password is incorrect, show error message
             model.addAttribute("errorMessage", "Грешна парола. Опитайте пак.");
-            return "secret-recipes";
         }
+        return "secret-recipes";
     }
 
     @GetMapping("/edit-recipe/{id}")

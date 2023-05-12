@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import com.myrecipe.entities.requests.UsersRequest;
 import com.myrecipe.entities.responses.UsersResponse;
 import com.myrecipe.entities.Users;
-import com.myrecipe.entities.Recipes;
 import com.myrecipe.repository.UsersRepository;
 import com.myrecipe.entities.RolesEn;
 import com.myrecipe.exceptions.InvalidUserRequestException;
@@ -117,12 +116,39 @@ public class MyUserService implements UsersService{
             throw new InvalidLoginDataException("Wrong login info!");
     }
 
+    /**
+     *
+     * @param email This is the email with which the search will be performed
+     * @return Returns the user associated with this email
+     */
     @Override
     public Users getByEmail(String email) {
         if(userRepository.findByEmail(email) != null) {
             return userRepository.findByEmail(email);
         } else
             throw new RecordNotFoundException("User with the specified ID does not exist!");
+    }
+
+    /**
+     *
+     * @return Returns a list containing all the administrators
+     */
+    @Override
+    public List<Users> getAllAdminUsers() {
+        if(!userRepository.findAllAdminUsers().isEmpty()) {
+            return userRepository.findAllAdminUsers();
+        } else
+            throw new RecordNotFoundException("There are no administrators!");
+    }
+
+    @Override
+    public void deleteAdminById(Integer id) {
+        Users user = userRepository.getReferenceById(id);
+        if(user == null) {
+            throw new RecordNotFoundException("User with the specified ID does NOT exist!");
+        }
+
+        userRepository.deleteById(id);
     }
 
     /**

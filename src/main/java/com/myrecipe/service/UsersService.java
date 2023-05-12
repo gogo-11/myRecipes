@@ -1,5 +1,6 @@
 package com.myrecipe.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ public interface UsersService {
     Users getByUserCredentials(UsersRequest usersRequest);
     Optional<Users> userUpdate(Integer id, UsersRequest userRequest);
     void deleteUser (UsersRequest userRequest);
-
     Users getByEmail(String email);
+    List<Users> getAllAdminUsers();
+    void deleteAdminById(Integer id);
 }

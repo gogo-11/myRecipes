@@ -1,0 +1,76 @@
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+.button-admin{
+    margin: 30px;
+    padding: auto;
+}
+
+.button-admin a {
+    background-color: #1abc9c;
+    color: white;
+    margin: 5px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 3px;
+    padding-bottom: 5px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 15px;
+    border: 1px solid #1abc9c;
+}
+
+.button-admin a:hover {
+    background-color: #ffffff;
+    color: #1abc9c;
+    border: 1px solid #1abc9c;
+}
+
+@media only screen and (max-width: 600px) {
+  table, thead, tbody, td, tr {
+    display: block;
+  }
+  th {
+    display: none;
+  }
+  .table1 tr, .table2 tr {
+    border: 1px solid #ccc;
+  }
+  .table1 td, .table2 td {
+    border: none;
+    border-bottom: 1px solid #eee;
+    position: relative;
+    padding-left: 50%;
+  }
+  .table1 td:before {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 45%;
+      padding-right: 10px;
+      white-space: nowrap;
+      content: attr(data-label);
+    }
+
+    .table2 td:before {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 45%;
+      padding-right: 10px;
+      white-space: nowrap;
+      content: attr(data-label2);
+    }
+}

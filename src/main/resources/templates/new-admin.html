@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="bg" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
-  <title>Тайни рецепти | MyRecipes</title>
+  <title>Регистрация | MyRecipes</title>
 
   <link rel="stylesheet" href="/css/styles.css"/>
   <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
@@ -30,10 +30,6 @@
       <li><a href="/welcome"> <img src="/img/home.png" width="20"></a></li>
       <li><a href="/all-recipes">Всички рецепти</a></li>
       <li><a href="/search">Потърси рецепта</a></li>
-      <li sec:authorize="hasRole('ROLE_USER')"><a href="/secret-recipes">Тайни рецепти</a></li>
-      <li sec:authorize="hasRole('ROLE_USER')"><a href="/my-recipes">Мои рецепти</a></li>
-      <li sec:authorize="hasRole('ROLE_USER')"><a href="/add-recipe">Добави рецепта</a></li>
-      <li sec:authorize="hasRole('ROLE_USER')"><a href="/account">Профил</a></li>
       <li sec:authorize="hasRole('ROLE_ADMIN')"><a href="/admin-panel">Администраторски панел</a></li>
     </ul>
   </nav>
@@ -41,32 +37,38 @@
 
 <!-- Main content section with recipe list -->
 <main>
-  <h2>Тайни рецепти</h2><br>
+  <!--    <h2>Регистрация</h2><br>-->
 
-  <div th:if="!${recipes}" style="text-align: center;">
-    <!--      <span>Въведете вашата парола!</span> <br>-->
-    <form th:action="@{/secret-recipes}" method="post">
-      <label for="password" style="font-size: 22px">Въведете вашата парола, за да продължите</label><br><br>
-      <input type="password" id="password" name="password" required><br><br>
+  <hr width="60%" size="3" style="margin-top: 20px;"><br>
+  <div class="forms">
+    <form th:object="${user}" method="post">
+      <span style="font-size: 22px;">Създаване на нов администратор</span> <br>
 
-      <input type="submit" value="Потвърди">
+      <input name="firstName" type="text" required placeholder="Име">
+
+      <br><span th:text="${errFirstName}" style="color: red;"></span><br>
+
+      <input name="lastName" type="text" required placeholder="Фамилия">
+      <br><span th:text="${errLastName}" style="color: red;"></span><br>
+
+      <input name="email" type="email" required placeholder="example@mail.com">
+      <br><span th:text="${errEmail}" style="color: red;"></span><br>
+
+      <input id="pass" name="password" type="password" required placeholder="Парола">
+      <br>
+      <input type="checkbox" onclick="showPassword()" id="passShow"> <label for="passShow" style="font-size: 14px">покажи паролата</label>
+      <br><span th:text="${errPass}" style="color: red;"></span><br>
+
+      <input id="cPass" name="confirmPass" type="password" required placeholder="Повтори паролата" oninput="matchPassword()"> <br>
+      <span id="Message" style="color: red;"></span>
+      <br><br>
+
+      <input id="subm" type="Submit" value="Регистрация" disabled> <br><br>
+
+
     </form>
   </div>
-
-  <ul th:if="${recipes}" class="recipe-list" >
-    <li th:each="recipe: ${recipes}">
-      <img th:if="${recipe.image}" th:src="@{'/recipes/image/{id}'(id=${recipe.id})}"
-           alt="Recipe image" width="300px">
-      <img th:unless="${recipe.image}" src="/img/missing-image.jpg"
-           alt="Recipe image" width="300px">
-      <h3 th:text="${recipe.recipeName}"></h3>
-      <p>Категория</p>
-      <a th:href="@{/view-recipe/{id}(id=${recipe.id})}">Виж рецептата</a>
-    </li>
-  </ul>
-
-  <div th:if="${errorMessage}" th:text="${errorMessage}" style="color: red;"></div>
-  <div th:if="${validator}" th:text="${validator}" style="color: red;"></div>
+  <hr width="60%" size="3"><br>
 </main>
 
 <!-- Footer with copyright and links -->
@@ -93,14 +95,6 @@
   <hr>
   <li><a href="/search">Потърси рецепта</a></li>
   <hr>
-  <li sec:authorize="hasRole('ROLE_USER')"><a href="/secret-recipes">Тайни рецепти</a></li>
-  <hr sec:authorize="hasRole('ROLE_USER')">
-  <li sec:authorize="hasRole('ROLE_USER')"><a href="/my-recipes">Мои рецепти</a></li>
-  <hr sec:authorize="hasRole('ROLE_USER')">
-  <li sec:authorize="hasRole('ROLE_USER')"><a href="/add-recipe">Добави рецепта</a></li>
-  <hr sec:authorize="hasRole('ROLE_USER')">
-  <li sec:authorize="hasRole('ROLE_USER')"><a href="/account">Профил</a></li>
-  <hr sec:authorize="hasRole('ROLE_USER')">
   <li sec:authorize="hasRole('ROLE_ADMIN')"><a href="/admin-panel">Администраторски панел</a></li>
   <hr sec:authorize="hasRole('ROLE_ADMIN')">
   <li sec:authorize="!isAuthenticated()"><a href="/login_form">Вход/Регистрация</a></li>
@@ -111,7 +105,7 @@
     </form>
     <a onclick="document.forms['logoutFormMob'].submit()">Изход</a>
   </li>
-  <hr sec:authorize="hasRole('ROLE_USER')">
+  <hr sec:authorize="isAuthenticated()">
 </ul>
 
 <script src="/js/app.js"></script>
