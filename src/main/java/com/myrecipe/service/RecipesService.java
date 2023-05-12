@@ -3,7 +3,6 @@ package com.myrecipe.service;
 import java.util.List;
 import java.util.Optional;
 
-import com.myrecipe.entities.Users;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Администратор | MyRecipes</title>
+
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <link rel="stylesheet" href="/css/admin-style.css"/>
+  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="user-account" id="user-account" sec:authorize="!isAuthenticated()">
+  <a href="/login_form">Вход</a>
+  или
+  <a href="/registration">Регистрация</a>
+</div>
+
+<div class="user-account" sec:authorize="isAuthenticated()">
+  <form id="logoutForm" method="POST" th:action="@{/logout}">
+    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+  </form>
+  Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Изход</a>
+</div>
+
+<!-- Header with logo and navigation menu -->
+<header>
+  <div class="logo">
+    <h1>Администраторски панел</h1>
+  </div>
+  <nav>
+    <ul>
+      <li><a href="/welcome"> <img src="/img/home.png" width="20"></a></li>
+      <li><a href="/all-recipes">Всички рецепти</a></li>
+      <li><a href="/search">Потърси рецепта</a></li>
+      <li sec:authorize="hasRole('ROLE_ADMIN')"><a href="/admin-panel">Администраторски панел</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- Main content section with recipe list -->
+<main>
+  <h2>Списък с администратори</h2><br>
+  <div class="button-admin"><a href="/new-admin">Създай нов</a></div>
+
+  <table class="table1">
+    <tbody>
+    <tr>
+      <th>Име</th>
+      <th>Фамилия</th>
+      <th>E-mail</th>
+      <th colspan="2">Действие</th>
+    </tr>
+    <tr th:if="${admins}" th:each="admin: ${admins}">
+      <td data-label="Име" th:text="${admin.firstName}"></td>
+      <td data-label="Фамилия" th:text="${admin.lastName}"></td>
+      <td data-label="E-mail" th:text="${admin.email}"></td>
+      <td data-label="Действия"><a th:href="@{/admin-panel/__${admin.id}__}">Редактирай</a></td>
+      <td><a class="deleteButton" th:if="${#lists.size(admins) > 1}" th:href="@{/admin-panel/delete/__${admin.id}__}">Изтрий</a></td>
+    </tr>
+    </tbody>
+  </table>
+
+  <div>
+    <span th:if="${adminUpdated}" th:text="${adminUpdated}" style="background-color: Aquamarine"></span>
+    <span th:if="${adminDeleted}" th:text="${adminDeleted}" style="background-color: Aquamarine"></span>
+    <span th:if="${errFirstName}" th:text="${errFirstName}" style="color: red;"></span>
+    <span th:if="${errLastName}" th:text="${errLastName}" style="color: red;"></span>
+    <span th:if="${errEmail}" th:text="${errEmail}" style="color: red;"></span>
+  </div>
+
+  <div th:if="${adminEdit}">
+    <hr width="60%" size="3" style="margin-top: 20px;">
+    <div class="forms">
+      <form th:object="${request}" method="post">
+        <span style="margin-bottom: 20px; font-size: 22px;">Информация за администратора</span> <br>
+
+        <input name="firstName" type="text" required placeholder="Име" th:value="${adminEdit.firstName}">
+        <br><br>
+        <input name="lastName" type="text" required placeholder="Фамилия" th:value="${adminEdit.lastName}">
+        <br><br>
+        <input name="email" type="email" required placeholder="example@mail.com" th:value="${adminEdit.email}">
+        <br><br>
+        <input id="subm" type="Submit" value="Обнови информацията"> <br><br>
+      </form>
+    </div>
+    <hr width="60%" size="3"><br>
+  </div>
+
+  <div th:if="${adminToDelete}">
+    <hr width="60%" size="3" style="margin-top: 20px;">
+    <div class="forms">
+      <form th:action="@{/admin-panel/delete/__${adminToDelete.id}__}" method="post">
+        <span style="margin-bottom: 20px; font-size: 22px;">Въведете вашата парола, за да продължите</span> <br>
+        <input name="passwordConfirm" type="password" required><br>
+        <span th:text="${errorMessage}" style="color: red;"></span><br>
+        <!--            <a name="delete" th:href="@{/delete/__${recipe.id}__}">Delete</a>-->
+        <input name="deleteAdmin" type="submit" value="Delete">
+      </form>
+    </div>
+    <hr width="60%" size="3"><br>
+  </div>
+
+  <h2>Коментари за одобряване</h2><br>
+
+  <table class="table2">
+    <tbody>
+    <tr>
+      <th>Рецепта</th>
+      <th>Потребител</th>
+      <th>Коментар</th>
+      <th colspan="2">Действие</th>
+    </tr>
+    <tr th:if="${admins}" th:each="admin: ${admins}">
+      <td data-label2="Рецепта" th:text="${admin.firstName}"></td>
+      <td data-label2="Потребител" th:text="${admin.lastName}"></td>
+      <td data-label2="Коментар" th:text="${admin.email}"></td>
+      <td data-label2="Действия"><a href="#edit">Одобри</a></td>
+      <td><a class="deleteButton" href="#delete">Изтрий</a></td>
+
+    </tr>
+    </tbody>
+  </table>
+</main>
+
+<!-- Footer with copyright and links -->
+<footer>
+  <p>&copy; 2023 MyRecipes. Всички права запазени.</p>
+  <nav>
+    <ul>
+      <li><a href="#">Privacy Policy</a></li>
+      <li><a href="#">Terms of Service</a></li>
+    </ul>
+  </nav>
+</footer>
+
+<!-- Hamburger icon and small menu for mobile devices -->
+<div id="menu-icon" onclick="showMenu()">
+  &#9776;
+</div>
+<ul id="small-menu">
+  <li sec:authorize="isAuthenticated()" style="padding-top: 5px;">Добре дошли, <span sec:authentication="name"></span></li>
+  <hr>
+  <li><a href="/welcome"> <img src="/img/home-green.png" width="20"></a></li>
+  <hr>
+  <li><a href="/all-recipes">Всички рецепти</a></li>
+  <hr>
+  <li><a href="/search">Потърси рецепта</a></li>
+  <hr>
+  <li sec:authorize="hasRole('ROLE_USER')"><a href="/secret-recipes">Тайни рецепти</a></li>
+  <hr sec:authorize="hasRole('ROLE_USER')">
+  <li sec:authorize="hasRole('ROLE_USER')"><a href="/my-recipes">Мои рецепти</a></li>
+  <hr sec:authorize="hasRole('ROLE_USER')">
+  <li sec:authorize="hasRole('ROLE_USER')"><a href="/add-recipe">Добави рецепта</a></li>
+  <hr sec:authorize="hasRole('ROLE_USER')">
+  <li sec:authorize="hasRole('ROLE_USER')"><a href="/account">Профил</a></li>
+  <hr sec:authorize="hasRole('ROLE_USER')">
+  <li sec:authorize="hasRole('ROLE_ADMIN')"><a href="/admin-panel">Администраторски панел</a></li>
+  <hr sec:authorize="hasRole('ROLE_ADMIN')">
+  <li sec:authorize="!isAuthenticated()"><a href="/login_form">Вход/Регистрация</a></li>
+  <hr sec:authorize="!isAuthenticated()">
+  <li sec:authorize="isAuthenticated()">
+    <form id="logoutFormMob" method="POST" th:action="@{/logout}">
+      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+    </form>
+    <a onclick="document.forms['logoutFormMob'].submit()">Изход</a>
+  </li>
+  <hr sec:authorize="hasRole('ROLE_USER')">
+</ul>
+
+<script src="/js/app.js"></script>
+</body>
+</html>

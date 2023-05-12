@@ -1,5 +1,7 @@
 package com.myrecipe.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,4 +16,7 @@ public interface UsersRepository extends JpaRepository<Users, Integer> {
 
     @Query(value = "SELECT * FROM users WHERE email = :userEmail AND password = :userPass", nativeQuery = true)
     Users findByUserCredentials(@Param("userEmail") String userEmail, @Param("userPass") String password);
+
+    @Query(value = "SELECT * FROM users WHERE role = \'ADMIN\'", nativeQuery = true)
+    List<Users> findAllAdminUsers();
 }

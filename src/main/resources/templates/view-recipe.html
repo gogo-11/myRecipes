@@ -30,10 +30,11 @@
             <li><a href="/welcome"> <img src="/img/home.png" width="20"></a></li>
             <li><a href="/all-recipes">Всички рецепти</a></li>
             <li><a href="/search">Потърси рецепта</a></li>
-            <li sec:authorize="hasRole('ROLE_USER')"><a href="/secret-recipes">Тайни рецепти</a></li>
+            <li sec:authorize="hasRole('ROLE_USER')"><a href="/secret-recipes" >Тайни рецепти</a></li>
             <li sec:authorize="hasRole('ROLE_USER')"><a href="/my-recipes">Мои рецепти</a></li>
             <li sec:authorize="hasRole('ROLE_USER')"><a href="/add-recipe">Добави рецепта</a></li>
             <li sec:authorize="hasRole('ROLE_USER')"><a href="/account">Профил</a></li>
+            <li sec:authorize="hasRole('ROLE_ADMIN')"><a href="/admin-panel">Администраторски панел</a></li>
         </ul>
     </nav>
 </header>

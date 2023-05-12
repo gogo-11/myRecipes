@@ -34,6 +34,7 @@
             <li sec:authorize="hasRole('ROLE_USER')"><a href="/my-recipes">Мои рецепти</a></li>
             <li sec:authorize="hasRole('ROLE_USER')"><a href="/add-recipe">Добави рецепта</a></li>
             <li sec:authorize="hasRole('ROLE_USER')"><a href="/account">Профил</a></li>
+            <li sec:authorize="hasRole('ROLE_ADMIN')"><a href="/admin-panel">Администраторски панел</a></li>
         </ul>
     </nav>
 </header>
@@ -94,6 +95,8 @@
     <hr sec:authorize="hasRole('ROLE_USER')">
     <li sec:authorize="hasRole('ROLE_USER')"><a href="/account">Профил</a></li>
     <hr sec:authorize="hasRole('ROLE_USER')">
+    <li sec:authorize="hasRole('ROLE_ADMIN')"><a href="/admin-panel">Администраторски панел</a></li>
+    <hr sec:authorize="hasRole('ROLE_ADMIN')">
     <li sec:authorize="!isAuthenticated()"><a href="/login_form">Вход/Регистрация</a></li>
     <hr sec:authorize="!isAuthenticated()">
     <li sec:authorize="isAuthenticated()">

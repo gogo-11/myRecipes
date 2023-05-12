@@ -27,13 +27,13 @@
   </div>
   <nav>
     <ul>
-      <li><a th:href="welcome" href="welcome.html"> <img src="/img/home.png" width="20"></a></li>
-      <li><a th:href="all-recipes" href="all-recipes">Всички рецепти</a></li>
-      <li><a th:href="search" href="search">Потърси рецепта</a></li>
-      <li sec:authorize="hasRole('ROLE_USER')"><a th:href="secret-recipes" href="secret-recipes.html" >Тайни рецепти</a></li>
+      <li><a href="/welcome"> <img src="/img/home.png" width="20"></a></li>
+      <li><a href="/all-recipes">Всички рецепти</a></li>
+      <li><a href="/search">Потърси рецепта</a></li>
+      <li sec:authorize="hasRole('ROLE_USER')"><a href="/secret-recipes">Тайни рецепти</a></li>
       <li sec:authorize="hasRole('ROLE_USER')"><a href="/my-recipes">Мои рецепти</a></li>
-      <li sec:authorize="hasRole('ROLE_USER')"><a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a></li>
-      <li sec:authorize="hasRole('ROLE_USER')"><a th:href="account" href="account.html">Профил</a></li>
+      <li sec:authorize="hasRole('ROLE_USER')"><a href="/add-recipe">Добави рецепта</a></li>
+      <li sec:authorize="hasRole('ROLE_USER')"><a href="/account">Профил</a></li>
     </ul>
   </nav>
 </header>
@@ -81,20 +81,22 @@
 <ul id="small-menu">
   <li sec:authorize="isAuthenticated()" style="padding-top: 5px;">Добре дошли, <span sec:authentication="name"></span></li>
   <hr>
-  <li><a th:href="welcome" href="welcome.html"> <img src="/img/home-green.png" width="20"></a></li>
+  <li><a href="/welcome"> <img src="/img/home-green.png" width="20"></a></li>
   <hr>
-  <li><a th:href="all-recipes" href="all-recipes">Всички рецепти</a></li>
+  <li><a href="/all-recipes">Всички рецепти</a></li>
   <hr>
-  <li><a th:href="search" href="search">Потърси рецепта</a></li>
+  <li><a href="/search">Потърси рецепта</a></li>
   <hr>
-  <li sec:authorize="hasRole('ROLE_USER')"><a th:href="secret-recipes" href="secret-recipes.html" >Тайни рецепти</a></li>
+  <li sec:authorize="hasRole('ROLE_USER')"><a href="/secret-recipes">Тайни рецепти</a></li>
   <hr sec:authorize="hasRole('ROLE_USER')">
   <li sec:authorize="hasRole('ROLE_USER')"><a href="/my-recipes">Мои рецепти</a></li>
   <hr sec:authorize="hasRole('ROLE_USER')">
-  <li sec:authorize="hasRole('ROLE_USER')"><a th:href="add-recipe" href="add-recipe.html">Добави рецепта</a></li>
+  <li sec:authorize="hasRole('ROLE_USER')"><a href="/add-recipe">Добави рецепта</a></li>
   <hr sec:authorize="hasRole('ROLE_USER')">
-  <li sec:authorize="hasRole('ROLE_USER')"><a th:href="account" href="account.html">Профил</a></li>
+  <li sec:authorize="hasRole('ROLE_USER')"><a href="/account">Профил</a></li>
   <hr sec:authorize="hasRole('ROLE_USER')">
+  <li sec:authorize="hasRole('ROLE_ADMIN')"><a href="/admin-panel">Администраторски панел</a></li>
+  <hr sec:authorize="hasRole('ROLE_ADMIN')">
   <li sec:authorize="!isAuthenticated()"><a href="/login_form">Вход/Регистрация</a></li>
   <hr sec:authorize="!isAuthenticated()">
   <li sec:authorize="isAuthenticated()">
