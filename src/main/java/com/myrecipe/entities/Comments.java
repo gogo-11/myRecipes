@@ -12,6 +12,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,10 +42,10 @@ public class Comments implements Serializable {
     @JsonBackReference
     private Recipes recipe;
 
-    @Column(name = "comment_text")
+    @Column(name = "comment_text", columnDefinition = "TEXT")
     private String commentText;
 
-    @Column(name = "comment_date", columnDefinition = "TEXT")
+    @Column(name = "comment_date")
     private LocalDateTime commentDate;
 
     @Column(name = "is_approved")

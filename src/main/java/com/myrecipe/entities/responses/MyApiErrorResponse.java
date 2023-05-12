@@ -1,4 +1,4 @@
-package com.myrecipe.entities;
+package com.myrecipe.entities.responses;
 
 import org.springframework.http.HttpStatus;
 

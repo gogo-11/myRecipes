@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.myrecipe.entities.MyApiErrorResponse;
+import com.myrecipe.entities.responses.MyApiErrorResponse;
 
 @ControllerAdvice
 public class MyRestExceptionHandler {

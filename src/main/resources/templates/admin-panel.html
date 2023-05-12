@@ -109,10 +109,10 @@
       <th>Коментар</th>
       <th colspan="2">Действие</th>
     </tr>
-    <tr th:if="${admins}" th:each="admin: ${admins}">
-      <td data-label2="Рецепта" th:text="${admin.firstName}"></td>
-      <td data-label2="Потребител" th:text="${admin.lastName}"></td>
-      <td data-label2="Коментар" th:text="${admin.email}"></td>
+    <tr th:if="${commentsToApprove}" th:each="comment: ${commentsToApprove}">
+      <td data-label2="Рецепта" th:text="${comment.recipe.recipeName}"></td>
+      <td data-label2="Потребител" th:text="${comment.user.firstName}"></td>
+      <td data-label2="Коментар" th:text="${comment.commentText}"></td>
       <td data-label2="Действия"><a href="#edit">Одобри</a></td>
       <td><a class="deleteButton" href="#delete">Изтрий</a></td>
 
