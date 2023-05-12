@@ -56,7 +56,11 @@ public class Users implements Serializable {
      */
     @OneToMany(mappedBy="user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Column(nullable = true)
-//    @JsonIgnoreProperties("user")
     @JsonManagedReference
     private List<Recipes> recipe = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Column(nullable = true)
+    @JsonManagedReference
+    private List<Comments> commentsList = new ArrayList<>();
 }
