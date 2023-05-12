@@ -3,6 +3,7 @@ package com.myrecipe.controller;
 import javax.servlet.http.HttpServletRequest;
 import java.util.regex.Pattern;
 
+import com.myrecipe.service.CommentsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -29,6 +30,9 @@ public class AdminController {
     private SecurityService securityService;
 
     @Autowired
+    private CommentsService commentsService;
+
+    @Autowired
     private PasswordEncoder encoder;
 
     /**
@@ -46,6 +50,7 @@ public class AdminController {
         }
 
         model.addAttribute("admins", usersService.getAllAdminUsers());
+        model.addAttribute("commentsToApprove", commentsService.getAllNonApprovedComments());
 
         return "admin-panel";
     }
