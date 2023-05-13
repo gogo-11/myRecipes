@@ -79,6 +79,32 @@
                     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
                     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
 
+                    <div class="comments">
+                        <h4>Коментари</h4>
+
+                        <ul class="comment-list" th:if="${recipeComments}">
+                            <li th:each="comment : ${recipeComments}">
+                                <div class="comment-details">
+                                    <h5 th:text="${comment.user.firstName + ' ' + comment.user.lastName + ':'}"></h5>
+                                    <p class="comment-date" th:text="${comment.commentDate}"></p>
+                                </div>
+                                <p class="comment-text" th:text="${comment.commentText}"></p>
+                            </li>
+                        </ul>
+                        <span th:unless="${recipeComments}">Все още няма коментари за тази рецепта...</span>
+                        <span th:if="${approvalAwait}">Вашият коментар е в процес на разглеждане. Благодарим за търпението!</span>
+
+                        <form class="comment-form" sec:authorize="isAuthenticated()" th:action="@{/view-recipe/__${recipe.id}__/add-comment}" method="post"> <!---->
+                            <h3>Добави коментар</h3>
+                            <span th:if="${approvalAwait}" style="font-size: 15; color: DodgerBlue; font-style: italic;">
+                                Вашият коментар е в процес на разглеждане. Благодарим за търпението!</span>
+                            <div class="form-group">
+                                <textarea name="commentText"
+                                          placeholder="Напишете вашия коментар тук..." required></textarea>
+                            </div>
+                            <input name="addComment" type="submit" value="Добави коментар">
+                        </form>
+                    </div>
                     <br>
                     Рецепти от същата категория:
                 </div>

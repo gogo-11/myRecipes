@@ -193,7 +193,4 @@ public class MyUserService implements UsersService{
         } else
             throw new RecordNotFoundException("User with the specified ID not found");
     }
-
-
-
 }

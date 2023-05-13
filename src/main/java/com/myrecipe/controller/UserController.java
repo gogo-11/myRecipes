@@ -1,6 +1,7 @@
 package com.myrecipe.controller;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -8,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.myrecipe.entities.requests.CommentsRequest;
 import org.apache.commons.collections4.ListUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +25,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.myrecipe.entities.Categories;
-import com.myrecipe.entities.Recipes;
-import com.myrecipe.entities.RolesEn;
-import com.myrecipe.entities.Users;
 import com.myrecipe.entities.requests.RecipesRequest;
 import com.myrecipe.entities.requests.UsersRequest;
 import com.myrecipe.exceptions.RecordNotFoundException;
@@ -34,6 +32,12 @@ import com.myrecipe.security.SecurityService;
 import com.myrecipe.service.RecipesService;
 import com.myrecipe.service.UsersService;
 import com.myrecipe.service.ImageUtils;
+import com.myrecipe.service.CommentsService;
+import com.myrecipe.entities.Categories;
+import com.myrecipe.entities.Comments;
+import com.myrecipe.entities.Recipes;
+import com.myrecipe.entities.RolesEn;
+import com.myrecipe.entities.Users;
 
 @Controller
 public class UserController {
@@ -44,6 +48,9 @@ public class UserController {
 
     @Autowired
     private RecipesService recipesService;
+
+    @Autowired
+    CommentsService commentsService;
 
     @Autowired
     private SecurityService securityService;
@@ -119,6 +126,9 @@ public class UserController {
     @GetMapping("/login_form")
     public String showLogin (Model model, String error, String logout) {
         if (securityService.isAuthenticated()) {
+            if(usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)) {
+                return "redirect:/admin-panel";
+            }
             return "redirect:/";
         }
         if (error != null)
@@ -161,10 +171,22 @@ public class UserController {
         } catch (RecordNotFoundException e) {
             return "redirect:/";
         }
+        try{
+            List<Comments> comList = commentsService.getByRecipe(id);
+            model.addAttribute("recipeComments", comList);
+        } catch (RecordNotFoundException e) {
+            System.out.println("No comments");
+        }
         String valid = (String) session.getAttribute("valid");
         if(recipe.getIsPrivate() && (valid == null || valid.isBlank())) {
             return "redirect:/";
         }
+
+        String approvalAwait = (String) session.getAttribute("approvalAwait");
+        if (approvalAwait != null)
+            if (!approvalAwait.isBlank()) {
+                model.addAttribute("approvalAwait", approvalAwait);
+            }
 
         String products = recipe.getProducts().replace(',','\n');
 //        String[] prodArr = recipe.getProducts().split(",");
@@ -184,6 +206,28 @@ public class UserController {
             model.addAttribute("userByRecipe", recipe.getUser().getEmail());
         }
         return "view-recipe";
+    }
+
+    @PostMapping("/view-recipe/{id}/add-comment")
+    public String addNewComment(@PathVariable("id") Integer id, @ModelAttribute(name="request") CommentsRequest request, Model model, HttpSession session) {
+        if (!securityService.isAuthenticated()) {
+            return "redirect:/";
+        }
+
+        try{
+            recipesService.getById(id);
+        } catch (RecordNotFoundException e) {
+            return "redirect:/";
+        }
+
+        request.setApproved(false);
+        request.setRecipeId(id);
+        request.setUserId(usersService.getByEmail(securityService.getAuthentication()).getId());
+        request.setCommentDate(LocalDateTime.now());
+
+        commentsService.createComment(request);
+        session.setAttribute("approvalAwait", "Вашата рецепта е в процес на преглед.");
+        return "redirect:/view-recipe/{id}";
     }
 
     @GetMapping("/add-recipe")
@@ -317,6 +361,13 @@ public class UserController {
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
         }
+
+        try{
+            Recipes recipe = recipesService.getById(id);
+        } catch (RecordNotFoundException e) {
+            return "redirect:/";
+        }
+
         Users currentUser = usersService.getByEmail(securityService.getAuthentication());
 
         String pass = req.getParameter("passwordConfirm");

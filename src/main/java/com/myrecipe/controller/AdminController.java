@@ -1,8 +1,12 @@
 package com.myrecipe.controller;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.regex.Pattern;
 
+import com.myrecipe.entities.Comments;
+import com.myrecipe.entities.requests.CommentsRequest;
 import com.myrecipe.service.CommentsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,12 +49,14 @@ public class AdminController {
         if(!securityService.isAuthenticated() || !usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)){
             return "redirect:/";
         }
-        if(usersService.getAllAdminUsers().size() == 1) {
-
-        }
 
         model.addAttribute("admins", usersService.getAllAdminUsers());
-        model.addAttribute("commentsToApprove", commentsService.getAllNonApprovedComments());
+        try{
+            List<Comments> comList = commentsService.getAllNonApprovedComments();
+            model.addAttribute("commentsToApprove", comList);
+        } catch (RecordNotFoundException e) {
+            System.out.println("No comments");
+        }
 
         return "admin-panel";
     }
@@ -194,20 +200,23 @@ public class AdminController {
 
     @PostMapping("/admin-panel/delete/{id}")
     public String deleteSelectedRecipe(@PathVariable("id") Integer id,  Model model,
-                                       HttpServletRequest req) {
+                                       HttpServletRequest httpRequest) {
         if (!securityService.isAuthenticated() || !usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)) {
             return "redirect:/admin-panel";
         }
+
+        if(usersService.getAllAdminUsers().size() <= 1){
+            model.addAttribute("adminDeleted",
+                    "Не можете да изтриете този администратор, тъй като няма други администратори!");
+            return "admin-panel";
+        }
+
         Users currentUser = usersService.getByEmail(securityService.getAuthentication());
 
-        String pass = req.getParameter("passwordConfirm");
+        String pass = httpRequest.getParameter("passwordConfirm");
 
         System.out.println(pass);
         System.out.println("gogogogogogogogogogogogogogogo");
-
-//        if(!currentUser.getEmail().equals(recipeOwner.getEmail()) && !currentUser.getRole().equals(RolesEn.ADMIN)) {
-//            return "welcome";
-//        }
 
         if(!encoder.matches(pass, currentUser.getPassword())) {
             model.addAttribute("errorMessage", "Грешна парола!");
@@ -218,6 +227,51 @@ public class AdminController {
         usersService.deleteAdminById(id);
         model.addAttribute("adminDeleted", "Администраторският профил е изтрит успешно!");
 
+        return "redirect:/admin-panel";
+    }
+
+    @GetMapping("/admin-panel/approve-comment/{id}")
+    public String approveCommentErrorCatch (@PathVariable("id") Integer id) {
+        Comments comment;
+        try{
+            comment = commentsService.getById(id);
+        } catch (RecordNotFoundException e) {
+            return "redirect:/admin-panel";
+        }
+        return "redirect:/admin-panel";
+    }
+
+    @PostMapping("/admin-panel/approve-comment/{id}")
+    public String approveComment (@PathVariable("id") Integer id, @ModelAttribute(name="request") CommentsRequest request, Model model) {
+        if(!securityService.isAuthenticated() || !usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)){
+            return "redirect:/admin-panel";
+        }
+        Comments comment;
+        try{
+            comment = commentsService.getById(id);
+        } catch (RecordNotFoundException e) {
+            return "redirect:/admin-panel";
+        }
+
+        request.setApproved(true);
+        request.setCommentText(comment.getCommentText());
+        request.setCommentDate(comment.getCommentDate());
+        request.setUserId(comment.getUser().getId());
+        request.setRecipeId(comment.getRecipe().getId());
+        LocalDateTime localDateTime = LocalDateTime.now();
+        System.out.println("##################request date" + request.getCommentDate());
+        System.out.println("##################now date" + LocalDateTime.now());
+
+        model.addAttribute("admins", usersService.getAllAdminUsers());
+
+        try{
+            List<Comments> comList = commentsService.getAllNonApprovedComments();
+            model.addAttribute("commentsToApprove", comList);
+        } catch (RecordNotFoundException e) {
+            System.out.println("No comments");
+        }
+
+        commentsService.approveComment(id, request);
         return "redirect:/admin-panel";
     }
 }

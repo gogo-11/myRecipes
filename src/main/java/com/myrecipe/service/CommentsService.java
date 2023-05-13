@@ -6,6 +6,7 @@ import com.myrecipe.entities.responses.CommentsResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public interface CommentsService {
@@ -15,4 +16,8 @@ public interface CommentsService {
      */
     CommentsResponse createComment(CommentsRequest request);
     List<Comments> getAllNonApprovedComments();
+    Optional<Comments> approveComment (Integer commentId, CommentsRequest request);
+    Comments getById(Integer id);
+
+    List<Comments> getByRecipe(Integer recipeId);
 }
