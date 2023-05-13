@@ -244,10 +244,12 @@ input {
     border-radius: 11px;
     margin-top: 10px;
     margin-bottom: 10px;
+    border: 1px solid #ccc;
 }
 
 input[type=file] {
     width: auto;
+    border: none;
 }
 
 textarea{
@@ -281,6 +283,81 @@ a {
 a:hover {
     color: DodgerBlue;
 }
+
+/* Comments */
+.comments {
+  margin-top: 50px;
+  background-color: #f8f8f8;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: left;
+}
+
+.comment-list {
+  list-style: none;
+  padding: 0;
+}
+
+.comment-list li {
+  margin-bottom: 20px;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 10px;
+}
+
+.comment-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.comment-details h3 {
+  margin: 0;
+}
+
+.comment-date {
+  margin: 0;
+  font-style: italic;
+  font-size: 14px;
+}
+
+.comment-text {
+  margin-top: 5px;
+}
+
+.comment-form {
+  margin-top: 50px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+label {
+  margin-bottom: 5px;
+}
+
+.form-group textarea {
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  width: 100%;
+  max-width: 100%;
+}
+
+/*button[type="submit"] {
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  background-color: #007bff;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}*/
 
 /* Footer */
 footer {
@@ -405,6 +482,27 @@ footer a:hover {
 
   .user-account {
     display: none;
+  }
+
+  .comments {
+    margin: 10px;
+    padding: 10px;
+  }
+
+  .comment {
+    margin-bottom: 10px;
+  }
+
+  .comment-author {
+    font-size: 1.2em;
+  }
+
+  .comment-date {
+    font-size: 0.6em;
+  }
+
+  .comment-text {
+    font-size: 0.9em;
   }
 }
 

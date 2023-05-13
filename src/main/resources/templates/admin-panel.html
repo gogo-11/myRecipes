@@ -24,7 +24,7 @@
 <!-- Header with logo and navigation menu -->
 <header>
   <div class="logo">
-    <h1>Администраторски панел</h1>
+    <h1>Администратор</h1>
   </div>
   <nav>
     <ul>
@@ -99,11 +99,11 @@
     <hr width="60%" size="3"><br>
   </div>
 
-  <h2>Коментари за одобряване</h2><br>
+  <h2>Коментари за преглед</h2><br>
 
   <table class="table2">
     <tbody>
-    <tr>
+    <tr th:if="${commentsToApprove}">
       <th>Рецепта</th>
       <th>Потребител</th>
       <th>Коментар</th>
@@ -111,11 +111,17 @@
     </tr>
     <tr th:if="${commentsToApprove}" th:each="comment: ${commentsToApprove}">
       <td data-label2="Рецепта" th:text="${comment.recipe.recipeName}"></td>
-      <td data-label2="Потребител" th:text="${comment.user.firstName}"></td>
+      <td data-label2="Потребител" th:text="${comment.user.firstName + ' ' + comment.user.lastName}"></td>
       <td data-label2="Коментар" th:text="${comment.commentText}"></td>
-      <td data-label2="Действия"><a href="#edit">Одобри</a></td>
+      <td data-label2="Действия">
+        <form th:action="@{/admin-panel/approve-comment/__${comment.id}__}" method="post">
+          <input name="approveComment" type="submit" value="Одобри">
+        </form>
+      </td>
       <td><a class="deleteButton" href="#delete">Изтрий</a></td>
-
+    </tr>
+    <tr th:unless="${commentsToApprove}" >
+      <td data-label2="Добра работа!" colspan="5"><span>Няма нови коментари, чакащи преглед</span></td>
     </tr>
     </tbody>
   </table>
