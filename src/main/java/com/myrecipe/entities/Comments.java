@@ -2,6 +2,7 @@ package com.myrecipe.entities;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -50,4 +51,9 @@ public class Comments implements Serializable {
 
     @Column(name = "is_approved")
     private boolean isApproved;
+
+    public String getFormattedCommentDate() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
+        return commentDate.format(formatter);
+    }
 }
