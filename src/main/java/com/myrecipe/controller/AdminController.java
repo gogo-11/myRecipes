@@ -1,6 +1,7 @@
 package com.myrecipe.controller;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -45,7 +46,7 @@ public class AdminController {
      * @return Returns the template name
      */
     @GetMapping("admin-panel")
-    public String showAdminPanel (Model model) {
+    public String showAdminPanel (Model model, HttpSession session) {
         if(!securityService.isAuthenticated() || !usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)){
             return "redirect:/";
         }
@@ -57,6 +58,21 @@ public class AdminController {
         } catch (RecordNotFoundException e) {
             System.out.println("No comments");
         }
+
+        String commentApproved = (String) session.getAttribute("commentApproved");
+        if (commentApproved != null)
+            if (!commentApproved.isBlank()) {
+                model.addAttribute("commentApproved", commentApproved);
+            }
+
+        String commentDeleted = (String) session.getAttribute("commentDeleted");
+        if (commentDeleted != null)
+            if (!commentDeleted.isBlank()) {
+                model.addAttribute("commentDeleted", commentDeleted);
+            }
+
+        session.setAttribute("commentApproved", null);
+        session.setAttribute("commentDeleted", null);
 
         return "admin-panel";
     }
@@ -131,6 +147,8 @@ public class AdminController {
             }
 
             model.addAttribute("adminEdit", admin);
+        } else {
+            return "admin-panel";
         }
 
         return "forward:/admin-panel";
@@ -242,8 +260,10 @@ public class AdminController {
     }
 
     @PostMapping("/admin-panel/approve-comment/{id}")
-    public String approveComment (@PathVariable("id") Integer id, @ModelAttribute(name="request") CommentsRequest request, Model model) {
-        if(!securityService.isAuthenticated() || !usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)){
+    public String approveComment (@PathVariable("id") Integer id,
+                                  @ModelAttribute(name="request") CommentsRequest request, Model model, HttpSession session) {
+        if(!securityService.isAuthenticated() ||
+                !usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)){
             return "redirect:/admin-panel";
         }
         Comments comment;
@@ -260,7 +280,7 @@ public class AdminController {
         request.setRecipeId(comment.getRecipe().getId());
         LocalDateTime localDateTime = LocalDateTime.now();
         System.out.println("##################request date" + request.getCommentDate());
-        System.out.println("##################now date" + LocalDateTime.now());
+        System.out.println("##################now date" + localDateTime);
 
         model.addAttribute("admins", usersService.getAllAdminUsers());
 
@@ -271,7 +291,28 @@ public class AdminController {
             System.out.println("No comments");
         }
 
+        session.setAttribute("commentApproved", "Коментарът е одобрен!");
+
         commentsService.approveComment(id, request);
+        return "redirect:/admin-panel";
+    }
+
+    @PostMapping("/admin-panel/delete-comment/{id}")
+    public String deleteCommentOnApproval (@PathVariable("id") Integer commentId, HttpSession session) {
+        if(!securityService.isAuthenticated() ||
+                !usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)){
+            return "redirect:/admin-panel";
+        }
+        Comments comment;
+        try{
+            comment = commentsService.getById(commentId);
+        } catch (RecordNotFoundException e) {
+            return "redirect:/admin-panel";
+        }
+
+        session.setAttribute("commentDeleted", "Коментарът е изтрит!");
+
+        commentsService.deleteComment(commentId);
         return "redirect:/admin-panel";
     }
 }

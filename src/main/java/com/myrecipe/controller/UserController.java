@@ -2,6 +2,8 @@ package com.myrecipe.controller;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -187,11 +189,17 @@ public class UserController {
             if (!approvalAwait.isBlank()) {
                 model.addAttribute("approvalAwait", approvalAwait);
             }
+        session.setAttribute("approvalAwait", null);
 
-        String products = recipe.getProducts().replace(',','\n');
-//        String[] prodArr = recipe.getProducts().split(",");
-//        List<String> prodList = Arrays.asList(prodArr);
-        recipe.setProducts(products);
+        String commentDeleted = (String) session.getAttribute("commentDeleted");
+        if (commentDeleted != null)
+            if (!commentDeleted.isBlank()) {
+                model.addAttribute("commentDeleted", commentDeleted);
+            }
+        session.setAttribute("commentDeleted", null);
+
+        List<String> recipeProducts = new ArrayList<String>(Arrays.asList(recipe.getProducts().split(",")));
+        model.addAttribute("recipeProducts", recipeProducts);
 
         if(Boolean.TRUE.equals(recipe.getIsPrivate())){
             if(!securityService.getAuthentication().equals(recipe.getUser().getEmail())){
@@ -206,6 +214,80 @@ public class UserController {
             model.addAttribute("userByRecipe", recipe.getUser().getEmail());
         }
         return "view-recipe";
+    }
+
+    @GetMapping("/view-recipe/{id}/delete-comment/{commentId}")
+    public String showCommentDeleteForm(@PathVariable("id") Integer id, @PathVariable("commentId") Integer commentId, Model model) {
+        if (!securityService.isAuthenticated()) {
+            return "redirect:/";
+        }
+
+        Users currentUser = usersService.getByEmail(securityService.getAuthentication());
+        Users recipeOwner = usersService.getById(recipesService.getById(id).getUser().getId());
+
+        Recipes recipe;
+        try{
+            recipe = recipesService.getById(id);
+        } catch (RecordNotFoundException e) {
+            return "redirect:/view-recipe/" + id;
+        }
+
+        Comments commentToDelete;
+        try{
+            commentToDelete = commentsService.getById(commentId);
+        } catch (RecordNotFoundException e) {
+            return "redirect:/view-recipe/" + id;
+        }
+
+        if(!commentToDelete.getUser().equals(currentUser) && !recipeOwner.getId().equals(currentUser.getId())) {
+//            return "redirect:/view-recipe/{id}";
+            return "redirect:/";
+        }
+
+        model.addAttribute("commentToDelete", commentToDelete);
+
+        model.addAttribute("showForm", true);
+        return "forward:/view-recipe/" + id;
+    }
+
+    @PostMapping("/view-recipe/{id}/delete-comment/{commentId}")
+    public String deleteComment (@PathVariable("id") Integer id, @PathVariable("commentId") Integer commentId, HttpSession session) {
+        if (!securityService.isAuthenticated()) {
+            return "redirect:/";
+        }
+        Users currentUser = usersService.getByEmail(securityService.getAuthentication());
+        Users recipeOwner = usersService.getById(recipesService.getById(id).getUser().getId());
+
+//        model.addAttribute("currentUser", currentUser);
+        Recipes recipe;
+        try{
+            recipe = recipesService.getById(id);
+        } catch (RecordNotFoundException e) {
+            return "redirect:/view-recipe/" + id;
+        }
+
+        Comments commentToDelete;
+        try{
+            commentToDelete = commentsService.getById(commentId);
+        } catch (RecordNotFoundException e) {
+            return "redirect:/view-recipe/" + id;
+        }
+
+        if(!commentToDelete.getUser().equals(currentUser) && !recipeOwner.getId().equals(currentUser.getId())) {
+            return "redirect:/view-recipe/" + id;
+        }
+
+//        model.addAttribute("commentToDelete", commentToDelete);
+//        model.addAttribute("recipe", recipe);
+//        if(securityService.isAuthenticated()){
+//            String authentication = securityService.getAuthentication();
+//            model.addAttribute("user", usersService.getByEmail(authentication));
+//            model.addAttribute("userByRecipe", recipe.getUser().getEmail());
+//        }
+        session.setAttribute("commentDeleted", "Коментарът е изтрит!");
+
+        commentsService.deleteComment(commentId);
+        return "redirect:/view-recipe/" + id;
     }
 
     @PostMapping("/view-recipe/{id}/add-comment")
@@ -226,7 +308,7 @@ public class UserController {
         request.setCommentDate(LocalDateTime.now());
 
         commentsService.createComment(request);
-        session.setAttribute("approvalAwait", "Вашата рецепта е в процес на преглед.");
+        session.setAttribute("approvalAwait", "Вашият коментар е в процес на преглед. Благодарим за търпението!");
         return "redirect:/view-recipe/{id}";
     }
 

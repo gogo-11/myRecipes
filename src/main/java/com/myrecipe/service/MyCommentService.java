@@ -122,4 +122,12 @@ public class MyCommentService implements CommentsService{
         }
 
     }
+
+    @Override
+    public void deleteComment(Integer id) {
+        if(commentsRepository.existsById(id)){
+            commentsRepository.delete(commentsRepository.getReferenceById(id));
+        } else
+            throw new RecordNotFoundException("No comment found under the specified id");
+    }
 }

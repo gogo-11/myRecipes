@@ -20,4 +20,5 @@ public interface CommentsService {
     Comments getById(Integer id);
 
     List<Comments> getByRecipe(Integer recipeId);
+    void deleteComment(Integer id);
 }

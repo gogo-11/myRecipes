@@ -54,14 +54,16 @@
 
                 <div class="leftSpl">
                     Необходими продукти: <br>
-                    <span th:text="${recipe.products}"></span>
-                    <br><br>
+<!--                    <span th:text="${recipe.products}"></span>-->
+                    <ul>
+                        <li th:each="product: ${recipeProducts}" th:text="${product}"></li>
+                    </ul>
 
-                    Порции:<br>
+                    Порции:
                     <span th:text="${recipe.portions}"></span>
                     <br><br>
-                    Време за приготвяне: <br>
-                    <span th:text="${recipe.cookingTime}"> мин.</span>
+                    Време за приготвяне:
+                    <span th:text="${recipe.cookingTime} + ' мин.'"></span>
                     <br><br>
                     Категория:
                     <span th:text="${recipe.category}"></span>
@@ -81,23 +83,36 @@
 
                     <div class="comments">
                         <h4>Коментари</h4>
+                        <span th:if="${commentDeleted}" th:text="${commentDeleted}" style="background-color: Aquamarine"></span>
 
                         <ul class="comment-list" th:if="${recipeComments}">
                             <li th:each="comment : ${recipeComments}">
                                 <div class="comment-details">
                                     <h5 th:text="${comment.user.firstName + ' ' + comment.user.lastName + ':'}"></h5>
-                                    <p class="comment-date" th:text="${comment.commentDate}"></p>
+                                    <p class="comment-date" th:text="${comment.getFormattedCommentDate()}"></p>
                                 </div>
                                 <p class="comment-text" th:text="${comment.commentText}"></p>
+<!--                                <a th:if="${currentUser}" th:href="@{/view-recipe/__${recipe.id}__/delete-comment/__${comment.commentId}__}">Изтриване на коментар</a>-->
+                                <span sec:authorize="isAuthenticated()"
+                                      th:if="${user.id} == ${comment.user.id} or ${user.email} == ${userByRecipe}"
+                                      class="deleteButton" style="font-size: 16px;">
+                                <a th:unless="${showForm}" th:href="@{/view-recipe/__${recipe.id}__/delete-comment/__${comment.id}__}">Изтриване на коментар</a></span>
+                                <div th:if="${showForm} and ${comment.id} == ${commentToDelete.id}" class="form-comDel">
+                                    <form th:action="@{/view-recipe/__${recipe.id}__/delete-comment/__${comment.id}__}" method="post">
+                                        <span style="margin-bottom: 20px; font-size: 18px; decoration: underline;">Сигурни ли сте, че искате да изтриете коментара?</span> <br>
+                                        <input name="deleteComment" type="submit" value="Изтрий">
+                                    </form>
+                                </div>
                             </li>
                         </ul>
                         <span th:unless="${recipeComments}">Все още няма коментари за тази рецепта...</span>
-                        <span th:if="${approvalAwait}">Вашият коментар е в процес на разглеждане. Благодарим за търпението!</span>
+                        <div sec:authorize="!isAuthenticated()">
+                            <span style="font-size: 18px;">Не сте в профила си. <a href="/login_form">Влезте</a>, за да добавите коментар</span>
+                        </div>
 
-                        <form class="comment-form" sec:authorize="isAuthenticated()" th:action="@{/view-recipe/__${recipe.id}__/add-comment}" method="post"> <!---->
+                        <form class="comment-form" sec:authorize="isAuthenticated()" th:action="@{/view-recipe/__${recipe.id}__/add-comment}" method="post">
                             <h3>Добави коментар</h3>
-                            <span th:if="${approvalAwait}" style="font-size: 15; color: DodgerBlue; font-style: italic;">
-                                Вашият коментар е в процес на разглеждане. Благодарим за търпението!</span>
+                            <span th:if="${approvalAwait}" th:text="${approvalAwait}" style="font-size: 16; color: DodgerBlue; font-style: italic;"></span>
                             <div class="form-group">
                                 <textarea name="commentText"
                                           placeholder="Напишете вашия коментар тук..." required></textarea>

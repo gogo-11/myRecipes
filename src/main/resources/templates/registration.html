@@ -51,23 +51,27 @@
             Вече имате акаунт? <a href="/login_form">Вход</a><br><br>
 
             <input name="firstName" type="text" required placeholder="Име">
-
-            <br><span th:text="${errFirstName}" style="color: red;"></span><br>
+            <br>
 
             <input name="lastName" type="text" required placeholder="Фамилия">
-            <br><span th:text="${errLastName}" style="color: red;"></span><br>
+            <br>
 
             <input name="email" type="email" required placeholder="example@mail.com">
-            <br><span th:text="${errEmail}" style="color: red;"></span><br>
+            <br>
 
             <input id="pass" name="password" type="password" required placeholder="Парола">
             <br>
             <input type="checkbox" onclick="showPassword()" id="passShow"> <label for="passShow" style="font-size: 14px">покажи паролата</label>
-            <br><span th:text="${errPass}" style="color: red;"></span><br>
+            <br>
 
             <input id="cPass" name="confirmPass" type="password" required placeholder="Повтори паролата" oninput="matchPassword()"> <br>
+            <br>
+
+            <span th:text="${errFirstName}" style="color: red;"></span>
+            <span th:text="${errLastName}" style="color: red;"></span>
+            <span th:text="${errEmail}" style="color: red;"></span>
+            <span th:text="${errPass}" style="color: red;"></span>
             <span id="Message" style="color: red;"></span>
-            <br><br>
 
             <input id="subm" type="Submit" value="Регистрация" disabled> <br><br>
 
