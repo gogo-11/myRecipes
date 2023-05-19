@@ -52,6 +52,7 @@ public class AdminController {
         }
 
         model.addAttribute("admins", usersService.getAllAdminUsers());
+
         try{
             List<Comments> comList = commentsService.getAllNonApprovedComments();
             model.addAttribute("commentsToApprove", comList);

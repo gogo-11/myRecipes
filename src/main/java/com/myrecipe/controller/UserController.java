@@ -505,15 +505,21 @@ public class UserController {
 
         request.setRole(RolesEn.USER);
 
-        if (!request.getFirstName().matches(nameRegex)) {
-            model.addAttribute("errFirstName", "Invalid input. Първото Ви име може да съдържа само букви от латинската азбука!");
-            return "account";
+        if(request.getFirstName() != null) {
+            if (!request.getFirstName().matches(nameRegex)) {
+                model.addAttribute("errFirstName", "Invalid input. Първото Ви име може да съдържа само букви от латинската азбука!");
+                return "account";
+            }
         }
 
-        if (!request.getLastName().matches(nameRegex)) {
-            model.addAttribute("errLastName", "Invalid input. Фамилното Ви име може да съдържа само букви от латинската азбука!");
-            return "account";
+        if(request.getFirstName() != null) {
+            if (!request.getLastName().matches(nameRegex)) {
+                model.addAttribute("errLastName", "Invalid input. Фамилното Ви име може да съдържа само букви от латинската азбука!");
+                return "account";
+            }
         }
+
+
 
         if(!Pattern.compile(emailRegexPattern).matcher(request.getEmail()).matches() &&
                 Pattern.compile(emailRegexSqlInjection).matcher(request.getEmail()).matches()) {
