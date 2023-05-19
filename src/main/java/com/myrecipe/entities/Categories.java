@@ -20,7 +20,7 @@ public enum Categories {
     SALADS("салати"),
     DOUGH("тестени");
 
-    private String explanation;
+    private final String explanation;
 
     Categories(String explanation) {
         this.explanation = explanation;

@@ -2,18 +2,13 @@ package com.myrecipe.controller;
 
 import java.util.Optional;
 
+import com.myrecipe.entities.PasswordResetToken;
+import com.myrecipe.service.ResetPasswordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.myrecipe.entities.requests.UsersRequest;
 import com.myrecipe.entities.responses.UsersResponse;
@@ -25,6 +20,8 @@ import com.myrecipe.service.UsersService;
 public class UsersRestController {
     @Autowired
     UsersService userService;
+    @Autowired
+    ResetPasswordService passwordService;
 
     /**
      * Method which returns a user found by id
@@ -82,5 +79,11 @@ public class UsersRestController {
             return new ResponseEntity<>("User with the specified ID not found", HttpStatus.NOT_FOUND);
         }
 
+    }
+
+    @DeleteMapping("/token/{id}")
+    public ResponseEntity<String> deleteToken (@PathVariable("id") Integer id) {
+        passwordService.deleteToken(id);
+        return new ResponseEntity<>("Deleted successfully", HttpStatus.OK);
     }
 }
