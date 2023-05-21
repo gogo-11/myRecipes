@@ -40,38 +40,56 @@
 
 <!-- Main content section with recipe list -->
 <main>
-    <h2 th:text="${currentUser.firstName + currentUser.lastName}"></h2>
+    <h2 th:text="${currentUser.firstName + ' ' + currentUser.lastName}"></h2>
     <div class="account-menu">
         <a href="/account">Профил</a>
-        <a href="/account/reset-password">Нулирай парола</a>
+        <a href="/account/change-password">Смяна на парола</a>
         <a href="#account" class="deleteButton">Изтрий акаунт</a>
     </div>
     <hr width="60%" size="3" style="margin-top: 20px;"><br>
     <div class="forms">
         <form th:unless="${showResPass}" method="post">
             <span style="margin-bottom: 20px; font-size: 22px;">Вашите данни</span> <br>
+            <span th:if="${userUpdated}" th:text="${userUpdated}" style="background-color: Aquamarine"></span><br>
 
             <input name="firstName" type="text" required placeholder="Име" th:value="${currentUser.firstName}">
-
-            <br><span th:text="${errFirstName}"></span><br>
+            <br>
 
             <input name="lastName" type="text" required placeholder="Фамилия" th:value="${currentUser.lastName}">
-            <span th:text="${errLastName}"></span>
-            <br><br>
+            <br>
 
-            <input name="email" type="email" required placeholder="example@mail.com" th:value="${currentUser.email}">
-            <span th:text="${errEmail}"></span>
-            <br><br>
+            <input name="oldPass" type="password" required placeholder="Въведете паролата си">
+            <br>
+
+            <span th:text="${errFirstName}" style="color: red;"></span>
+            <span th:text="${errLastName}" style="color: red;"></span>
+            <span th:text="${errPass}" style="color: red;"></span>
+            <span id="Message" style="color: red;"></span>
+            <br>
+
             <input id="subm" type="Submit" value="Обнови информацията"> <br><br>
         </form>
-        <form th:if="${showResPass}" th:action="@{/account/reset-password}" method="post">
+        <form th:if="${showResPass}" th:action="@{/account/change-password}" method="post">
 <!--            <span th:if="alreadyRequested" th:text="${alreadyRequested}"></span><br>-->
-            <span style="margin-bottom: 20px; font-size: 20px;">Въведете вашия имейл адрес, за да продължите</span> <br>
+            <span style="margin-bottom: 20px; font-size: 20px;">Въведете текущата си парола и желаната нова парола</span> <br>
+            <span th:if="${changeSuccess}" th:text="${changeSuccess}" style="background-color: Aquamarine"></span><br>
 
-            <input name="email" type="email" required placeholder="example@mail.com">
-            <span th:text="${errEmail}"></span>
-            <br><br>
-            <input id="submitEmail" type="Submit" value="Нулиране на паролата"> <br><br>
+
+            <input name="oldPass" type="password" required placeholder="Текуща парола">
+            <br>
+            <input id="pass" name="password" type="password" required placeholder="Нова парола">
+            <br>
+            <input type="checkbox" onclick="showPassword()" id="passShow"> <label for="passShow" style="font-size: 14px">покажи паролата</label>
+            <br>
+
+            <input id="cPass" name="confirmPass" type="password" required placeholder="Повтори паролата" oninput="matchPassword()"> <br>
+            <br>
+
+            <br>
+            <span th:text="${errPass}" style="color: red;"></span>
+            <br>
+
+            <input id="submitPassword" type="Submit" value="Смяна на паролата"> <br><br>
         </form>
     </div>
     <hr width="60%" size="3"><br>
