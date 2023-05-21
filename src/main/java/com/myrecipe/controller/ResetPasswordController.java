@@ -1,25 +1,30 @@
 package com.myrecipe.controller;
 
-import com.myrecipe.entities.PasswordResetToken;
-import com.myrecipe.entities.Users;
-import com.myrecipe.entities.requests.PasswordResetTokenRequest;
-import com.myrecipe.entities.requests.UsersRequest;
-import com.myrecipe.exceptions.RecordNotFoundException;
-import com.myrecipe.security.SecurityService;
-import com.myrecipe.service.ResetPasswordService;
-import com.myrecipe.service.UsersService;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import com.myrecipe.entities.PasswordResetToken;
+import com.myrecipe.entities.Users;
+import com.myrecipe.entities.requests.PasswordResetTokenRequest;
+import com.myrecipe.entities.requests.UsersRequest;
+import com.myrecipe.exceptions.RecordNotFoundException;
+import com.myrecipe.repository.UsersRepository;
+import com.myrecipe.security.SecurityService;
+import com.myrecipe.service.ResetPasswordService;
+import com.myrecipe.service.UsersService;
 
 @Controller
 public class ResetPasswordController {
@@ -28,6 +33,9 @@ public class ResetPasswordController {
 
     @Autowired
     private UsersService usersService;
+
+    @Autowired
+    private UsersRepository usersRepository;
 
     @Autowired
     private ResetPasswordService resetPasswordService;
@@ -131,9 +139,10 @@ public class ResetPasswordController {
 
         request.setPassword(encoder.encode(request.getPassword()));
 
-        usersService.userUpdate(userByToken.getId(), request);
+        userByToken.setPasswordResetToken(null);
+        this.usersRepository.save(userByToken);
+        this.usersService.userUpdate(userByToken.getId(), request);
         model.addAttribute("resetSuccess", "Променихте паролата си успешно");
-        resetPasswordService.deleteToken(passwordResetToken.getId());
         return "redirect:/account";
     }
 
