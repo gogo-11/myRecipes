@@ -2,18 +2,24 @@ package com.myrecipe.controller;
 
 import java.util.Optional;
 
-import com.myrecipe.entities.PasswordResetToken;
-import com.myrecipe.service.ResetPasswordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.myrecipe.entities.requests.UsersRequest;
 import com.myrecipe.entities.responses.UsersResponse;
 import com.myrecipe.entities.Users;
 import com.myrecipe.service.UsersService;
+import com.myrecipe.repository.UsersRepository;
+import com.myrecipe.service.ResetPasswordService;
 
 @RestController
 @RequestMapping("/user")
@@ -22,6 +28,8 @@ public class UsersRestController {
     UsersService userService;
     @Autowired
     ResetPasswordService passwordService;
+    @Autowired
+    UsersRepository userRepo;
 
     /**
      * Method which returns a user found by id
@@ -83,7 +91,9 @@ public class UsersRestController {
 
     @DeleteMapping("/token/{id}")
     public ResponseEntity<String> deleteToken (@PathVariable("id") Integer id) {
-        passwordService.deleteToken(id);
+        Users user = userService.getById(passwordService.getByTokenId(id).getUser().getId());
+        user.setPasswordResetToken(null);
+        this.userRepo.save(user);
         return new ResponseEntity<>("Deleted successfully", HttpStatus.OK);
     }
 }
