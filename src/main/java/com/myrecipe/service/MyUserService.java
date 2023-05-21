@@ -183,7 +183,7 @@ public class MyUserService implements UsersService{
             if(userRequest.getPassword() == null) {
                 user.get().setPassword(userRepository.getReferenceById(id).getPassword());
             } else {
-                user.get().setPassword(userRequest.getPassword());
+                user.get().setPassword(encoder.encode(userRequest.getPassword()));
             }
 
             user.get().setRole(userRepository.getReferenceById(id).getRole());

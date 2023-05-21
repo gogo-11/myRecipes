@@ -183,6 +183,7 @@ public class UserController {
         if(recipe.getIsPrivate() && (valid == null || valid.isBlank())) {
             return "redirect:/";
         }
+        session.setAttribute("valid", null);
 
         String approvalAwait = (String) session.getAttribute("approvalAwait");
         if (approvalAwait != null)
@@ -276,14 +277,6 @@ public class UserController {
         if(!commentToDelete.getUser().equals(currentUser) && !recipeOwner.getId().equals(currentUser.getId())) {
             return "redirect:/view-recipe/" + id;
         }
-
-//        model.addAttribute("commentToDelete", commentToDelete);
-//        model.addAttribute("recipe", recipe);
-//        if(securityService.isAuthenticated()){
-//            String authentication = securityService.getAuthentication();
-//            model.addAttribute("user", usersService.getByEmail(authentication));
-//            model.addAttribute("userByRecipe", recipe.getUser().getEmail());
-//        }
         session.setAttribute("commentDeleted", "Коментарът е изтрит!");
 
         commentsService.deleteComment(commentId);
@@ -488,7 +481,10 @@ public class UserController {
     }
 
     @PostMapping("/account")
-    public String updateUserAccount(@ModelAttribute(name="request") UsersRequest request, BindingResult bindingResult, Model model) {
+    public String updateUserAccount(@RequestParam("oldPass") String oldPass,
+                                    @ModelAttribute(name="request") UsersRequest request,
+                                    BindingResult bindingResult, Model model) {
+
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
         }
@@ -497,10 +493,8 @@ public class UserController {
         }
 
         Users user = usersService.getByEmail(securityService.getAuthentication());
+        model.addAttribute("currentUser", user);
 
-        String emailRegexSqlInjection = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
-        String emailRegexPattern = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@"
-                + "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
         String nameRegex = "^[a-zA-Z'-]+$";
 
         request.setRole(RolesEn.USER);
@@ -519,17 +513,70 @@ public class UserController {
             }
         }
 
+        if(oldPass.isBlank() || oldPass == null) {
+            model.addAttribute("errPass", "Невалидна парола!");
+            model.addAttribute("currentUser", user);
+            return "account";
+        }
 
+        if (oldPass != null && !encoder.matches(oldPass, user.getPassword())) {
+            model.addAttribute("errPass", "Грешна парола!");
+            model.addAttribute("currentUser", user);
+            return "account";
+        }
 
-        if(!Pattern.compile(emailRegexPattern).matcher(request.getEmail()).matches() &&
-                Pattern.compile(emailRegexSqlInjection).matcher(request.getEmail()).matches()) {
-            model.addAttribute("errEmail", "Невалиден имейл!");
+        System.out.println(oldPass + "#########################################################");
+
+        usersService.userUpdate(user.getId(), request);
+        model.addAttribute("userUpdated", "Профилът Ви беше успешно актуализиран!");
+
+        return "account";
+    }
+
+    @GetMapping("/account/change-password")
+    public String showChangePassForm(Model model) {
+        if(!securityService.isAuthenticated()) {
+            return "redirect:/";
+        }
+
+        model.addAttribute("showResPass", "Showing reset password form");
+
+        return "forward:/account";
+    }
+
+    @PostMapping("/account/change-password")
+    public String updateUserPassword (@RequestParam("oldPass") String oldPass,
+                                      @RequestParam("confirmPass") String confirmPass,
+                                      @ModelAttribute UsersRequest request, Model model) {
+        if (!securityService.isAuthenticated()) {
+            return "redirect:/";
+        }
+
+        Users user = usersService.getByEmail(securityService.getAuthentication());
+        model.addAttribute("currentUser", user);
+        model.addAttribute("showResPass", "Showing reset password form");
+
+        if(oldPass.isBlank() || oldPass == null || confirmPass.isBlank() || confirmPass == null || request.getPassword().isBlank()) {
+            model.addAttribute("errPass", "Попълнете всички полета!");
+            model.addAttribute("currentUser", user);
+            return "account";
+        }
+
+        if(!request.getPassword().equals(confirmPass)) {
+            model.addAttribute("errPass", "Паролите не съвпадат!");
+            return "account";
+        }
+
+        if (!encoder.matches(oldPass, user.getPassword())) {
+            model.addAttribute("errPass", "Грешна текуща парола парола!");
+//            model.addAttribute("currentUser", user);
             return "account";
         }
 
         usersService.userUpdate(user.getId(), request);
+        model.addAttribute("changeSuccess", "Успешна смяна на паролата");
 
-        return "redirect:/account";
+        return "account";
     }
 
     @GetMapping("/secret-recipes")
@@ -540,7 +587,6 @@ public class UserController {
         if(usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)){
             return "redirect:/welcome";
         }
-        session.setAttribute("valid","Valid request");
 
         model.addAttribute("recipe", new Recipes());
         return "secret-recipes";
