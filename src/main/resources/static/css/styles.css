@@ -179,14 +179,13 @@ main {
     border: 2px solid #454545;
     padding: 10px;
     border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
 }
 
 .account-menu a {
     margin: 10px;
-}
-
-.deleteButton a:hover{
-    color: red;
 }
 
 /* Pagination */
@@ -297,6 +296,10 @@ a {
 
 a:hover {
     color: DodgerBlue;
+}
+
+.deleteButton a:hover{
+    color: red;
 }
 
 /* Comments */

@@ -18,6 +18,7 @@ public interface RecipesService {
     Recipes getByName(RecipesRequest request);
     List<Recipes> getByKeyword(String keyword);
     List<Recipes> getByCategory (RecipesRequest request);
+    List<Recipes> getRandomThreeByCategory (Integer recipeId, RecipesRequest request);
     List<Recipes> getAllPublicRecipes();
     List<Recipes> getLastTenPublicRecipes();
     List<Recipes> getUsersAllPrivateRecipes(UsersRequest usersRequest);

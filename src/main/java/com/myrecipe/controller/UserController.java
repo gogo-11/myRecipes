@@ -173,12 +173,25 @@ public class UserController {
         } catch (RecordNotFoundException e) {
             return "redirect:/";
         }
+        RecipesRequest request = new RecipesRequest();
+        request.setCategory(recipe.getCategory());
+
+        List<Recipes> threeRecipes = null;
+        try {
+            threeRecipes = recipesService.getRandomThreeByCategory(recipe.getId(), request);
+        } catch (RecordNotFoundException e) {
+            model.addAttribute("noSimilar", "Все още няма други рецепти от тази категория...");
+        }
+
+        model.addAttribute("recipes", threeRecipes);
+
         try{
             List<Comments> comList = commentsService.getByRecipe(id);
             model.addAttribute("recipeComments", comList);
         } catch (RecordNotFoundException e) {
             System.out.println("No comments");
         }
+
         String valid = (String) session.getAttribute("valid");
         if(recipe.getIsPrivate() && (valid == null || valid.isBlank())) {
             return "redirect:/";
@@ -241,7 +254,6 @@ public class UserController {
         }
 
         if(!commentToDelete.getUser().equals(currentUser) && !recipeOwner.getId().equals(currentUser.getId())) {
-//            return "redirect:/view-recipe/{id}";
             return "redirect:/";
         }
 
@@ -355,11 +367,10 @@ public class UserController {
         Recipes recipe = recipesService.getById(id);
         if (recipe != null && recipe.getImage() != null) {
             try {
-                response.setContentType("image/jpeg"); // Set the appropriate content type for your image
+                response.setContentType("image/jpeg");
                 response.getOutputStream().write(recipe.getImage());
                 response.getOutputStream().flush();
             } catch (IOException e) {
-                // Handle exception
                 System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
             }
         }
@@ -533,51 +544,50 @@ public class UserController {
         return "account";
     }
 
-    @GetMapping("/account/change-password")
-    public String showChangePassForm(Model model) {
-        if(!securityService.isAuthenticated()) {
-            return "redirect:/";
-        }
-
-        model.addAttribute("showResPass", "Showing reset password form");
-
-        return "forward:/account";
-    }
-
-    @PostMapping("/account/change-password")
-    public String updateUserPassword (@RequestParam("oldPass") String oldPass,
-                                      @RequestParam("confirmPass") String confirmPass,
-                                      @ModelAttribute UsersRequest request, Model model) {
-        if (!securityService.isAuthenticated()) {
-            return "redirect:/";
-        }
-
-        Users user = usersService.getByEmail(securityService.getAuthentication());
-        model.addAttribute("currentUser", user);
-        model.addAttribute("showResPass", "Showing reset password form");
-
-        if(oldPass.isBlank() || oldPass == null || confirmPass.isBlank() || confirmPass == null || request.getPassword().isBlank()) {
-            model.addAttribute("errPass", "Попълнете всички полета!");
-            model.addAttribute("currentUser", user);
-            return "account";
-        }
-
-        if(!request.getPassword().equals(confirmPass)) {
-            model.addAttribute("errPass", "Паролите не съвпадат!");
-            return "account";
-        }
-
-        if (!encoder.matches(oldPass, user.getPassword())) {
-            model.addAttribute("errPass", "Грешна текуща парола парола!");
+//    @GetMapping("/account/change-password")
+//    public String showChangePassForm(Model model) {
+//        if(!securityService.isAuthenticated()) {
+//            return "redirect:/";
+//        }
+//
+//        model.addAttribute("showResPass", "Showing reset password form");
+//
+//        return "forward:/account";
+//    }
+//
+//    @PostMapping("/account/change-password")
+//    public String updateUserPassword (@RequestParam("oldPass") String oldPass,
+//                                      @RequestParam("confirmPass") String confirmPass,
+//                                      @ModelAttribute UsersRequest request, Model model) {
+//        if (!securityService.isAuthenticated()) {
+//            return "redirect:/";
+//        }
+//
+//        Users user = usersService.getByEmail(securityService.getAuthentication());
+//        model.addAttribute("currentUser", user);
+//        model.addAttribute("showResPass", "Showing reset password form");
+//
+//        if(oldPass.isBlank() || oldPass == null || confirmPass.isBlank() || confirmPass == null || request.getPassword().isBlank()) {
+//            model.addAttribute("errPass", "Попълнете всички полета!");
 //            model.addAttribute("currentUser", user);
-            return "account";
-        }
-
-        usersService.userUpdate(user.getId(), request);
-        model.addAttribute("changeSuccess", "Успешна смяна на паролата");
-
-        return "account";
-    }
+//            return "account";
+//        }
+//
+//        if(!request.getPassword().equals(confirmPass)) {
+//            model.addAttribute("errPass", "Паролите не съвпадат!");
+//            return "account";
+//        }
+//
+//        if (!encoder.matches(oldPass, user.getPassword())) {
+//            model.addAttribute("errPass", "Грешна текуща парола парола!");
+//            return "account";
+//        }
+//
+//        usersService.userUpdate(user.getId(), request);
+//        model.addAttribute("changeSuccess", "Успешна смяна на паролата");
+//
+//        return "account";
+//    }
 
     @GetMapping("/secret-recipes")
     public String showSecretRecipes(Model model, HttpSession session) {

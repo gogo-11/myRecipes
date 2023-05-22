@@ -64,10 +64,9 @@
             <span th:text="${errFirstName}" style="color: red;"></span>
             <span th:text="${errLastName}" style="color: red;"></span>
             <span th:text="${errPass}" style="color: red;"></span>
-            <span id="Message" style="color: red;"></span>
             <br>
 
-            <input id="subm" type="Submit" value="Обнови информацията"> <br><br>
+            <input name="submitUserData" type="Submit" value="Обнови информацията"> <br><br>
         </form>
         <form th:if="${showResPass}" th:action="@{/account/change-password}" method="post">
 <!--            <span th:if="alreadyRequested" th:text="${alreadyRequested}"></span><br>-->
@@ -87,9 +86,10 @@
 
             <br>
             <span th:text="${errPass}" style="color: red;"></span>
+            <span id="Message" style="color: red;"></span>
             <br>
 
-            <input id="submitPassword" type="Submit" value="Смяна на паролата"> <br><br>
+            <input id="subm" type="Submit" value="Смяна на паролата"> <br><br>
         </form>
     </div>
     <hr width="60%" size="3"><br>

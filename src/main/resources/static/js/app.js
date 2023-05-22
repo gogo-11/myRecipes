@@ -28,14 +28,16 @@ function showMenu() {
       console.log(pw2);
       if(pw1 == pw2)
       {
-        document.getElementById("subm").disabled=false;
+        //document.getElementById("submitPassword").disabled = false;
         document.getElementById("pass").style.borderColor = "black";
         document.getElementById("cPass").style.borderColor = "black";
-            document.getElementById("Message").innerHTML = "";
+        document.getElementById("subm").disabled=false;
+        document.getElementById("Message").innerHTML = "";
       } else {
         document.getElementById("pass").style.borderColor = "tomato";
         document.getElementById("cPass").style.borderColor = "tomato";
         document.getElementById("subm").disabled=true;
+        //document.getElementById("submitPassword").disabled = true;
         document.getElementById("Message").innerHTML = "Паролите не съвпадат!";
       }
     }
