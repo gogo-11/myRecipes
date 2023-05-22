@@ -2,7 +2,6 @@ package com.myrecipe.repository;
 
 import java.util.List;
 
-import com.myrecipe.entities.Categories;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -36,4 +35,7 @@ public interface RecipesRepository extends JpaRepository<Recipes, Integer> {
 
     @Query(value= "SELECT * FROM recipes WHERE is_private = false ORDER BY recipe_id DESC LIMIT 10", nativeQuery = true)
     List<Recipes> findLastTenPublicRecipes();
+
+    @Query(value = "SELECT * FROM recipes WHERE is_private = false AND category = :category ORDER BY rand() LIMIT 3", nativeQuery = true)
+    List<Recipes> findRandomThreeByCategory(@Param("category") String category);
 }

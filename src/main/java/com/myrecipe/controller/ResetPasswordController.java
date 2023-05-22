@@ -49,6 +49,50 @@ public class ResetPasswordController {
     @Value("${app.base-url}")
     private String appBaseUrl;
 
+    @GetMapping("/account/change-password")
+    public String showChangePassForm(Model model) {
+        if(!securityService.isAuthenticated()) {
+            return "redirect:/";
+        }
+
+        model.addAttribute("showResPass", "Showing reset password form");
+
+        return "forward:/account";
+    }
+
+    @PostMapping("/account/change-password")
+    public String updateUserPassword (@RequestParam("oldPass") String oldPass,
+                                      @RequestParam("confirmPass") String confirmPass,
+                                      @ModelAttribute UsersRequest request, Model model) {
+        if (!securityService.isAuthenticated()) {
+            return "redirect:/";
+        }
+
+        Users user = usersService.getByEmail(securityService.getAuthentication());
+        model.addAttribute("currentUser", user);
+        model.addAttribute("showResPass", "Showing reset password form");
+
+        if(oldPass.isBlank() || oldPass == null || confirmPass.isBlank() || confirmPass == null || request.getPassword().isBlank()) {
+            model.addAttribute("errPass", "Попълнете всички полета!");
+            model.addAttribute("currentUser", user);
+            return "account";
+        }
+
+        if(!request.getPassword().equals(confirmPass)) {
+            model.addAttribute("errPass", "Паролите не съвпадат!");
+            return "account";
+        }
+
+        if (!encoder.matches(oldPass, user.getPassword())) {
+            model.addAttribute("errPass", "Грешна текуща парола парола!");
+            return "account";
+        }
+
+        usersService.userUpdate(user.getId(), request);
+        model.addAttribute("changeSuccess", "Успешна смяна на паролата");
+
+        return "account";
+    }
 
     @GetMapping("/account/reset-password")
     public String showResetPassForm (Model model) {

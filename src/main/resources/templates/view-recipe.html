@@ -122,6 +122,21 @@
                     </div>
                     <br>
                     Рецепти от същата категория:
+                    <br><hr width="60%" size="3">
+                    <div th:unless="${noSimilar}">
+                    <ul class="recipe-list">
+                        <li th:each="recipe: ${recipes}">
+                            <img th:if="${recipe.image}" th:src="@{'/recipes/image/{id}'(id=${recipe.id})}"
+                                 alt="Recipe image" width="300px">
+                            <img th:unless="${recipe.image}" src="/img/missing-image.jpg"
+                                 alt="Recipe image" width="300px">
+                            <h3 th:text="${recipe.recipeName}"></h3>
+                            <p>Категория</p>
+                            <a th:href="@{/view-recipe/{id}(id=${recipe.id})}">Виж рецептата</a>
+                        </li>
+                    </ul>
+                    </div>
+                    <div th:if="${noSimilar}"><span th:text="${noSimilar}" style="font-style: italic;"></span></div>
                 </div>
             </div>
     <hr width="60%" size="3"><br>

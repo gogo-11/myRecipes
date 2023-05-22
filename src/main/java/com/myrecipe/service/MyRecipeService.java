@@ -114,10 +114,9 @@ public class MyRecipeService implements RecipesService{
      */
     @Override
     public Recipes getById(Integer recipeId) {
-        if(recipesRepository.findById(recipeId).isPresent()) {
-            return recipesRepository.findById(recipeId).get();
-        } else
-            throw new RecordNotFoundException("Recipe with the specified ID does not exist!");
+        return recipesRepository
+                .findById(recipeId)
+                .orElseThrow(() -> new RecordNotFoundException("Recipe with the specified ID does not exist!"));
     }
 
     /**
@@ -151,6 +150,22 @@ public class MyRecipeService implements RecipesService{
 
         if (Categories.categoryExists(request.getCategory().toString())){
             List<Recipes> recipes = recipesRepository.findByCategory(request.getCategory().toString());
+
+            if (!recipes.isEmpty()) {
+                return recipes;
+            } else
+                throw new RecordNotFoundException("No recipes found from the specified category!");
+        } else {
+            throw new InvalidCategoryException("Wrong category");
+        }
+    }
+
+    @Override
+    public List<Recipes> getRandomThreeByCategory(Integer recipeId, RecipesRequest request) {
+        if (Categories.categoryExists(request.getCategory().toString())){
+            List<Recipes> recipes = recipesRepository.findByCategory(request.getCategory().toString());
+
+            recipes.removeIf(recipe -> recipe.getId().equals(recipeId));
 
             if (!recipes.isEmpty()) {
                 return recipes;
