@@ -94,37 +94,44 @@ public class ResetPasswordController {
         return "account";
     }
 
-    @GetMapping("/account/reset-password")
+    @GetMapping("/reset-password")
     public String showResetPassForm (Model model) {
-        if(!securityService.isAuthenticated()) {
-            return "redirect:/";
-        }
-
         model.addAttribute("showResPass", "Showing reset password form");
 
-        return "forward:/account";
+        return "reset-password";
     }
 
-    @PostMapping("/account/reset-password")
+    @PostMapping("/reset-password")
     public String processResetPasswordForm(@RequestParam("email") String email, Model model) {
-        if(!securityService.isAuthenticated()) {
-            return "redirect:/";
+        if(securityService.isAuthenticated()){
+            // Validate the email and retrieve the user from your user repository
+            String currentUserEmail = securityService.getAuthentication();
+            if(!currentUserEmail.equals(email)){
+                model.addAttribute("error", "Имейлът, който въведохте, не е вашият!");
+                return "reset-password";
+            }
         }
-        // Validate the email and retrieve the user from your user repository
-        String currentUserEmail = securityService.getAuthentication();
-        if(!currentUserEmail.equals(email)){
-            return "redirect:/account";
-        }
-        Users userByEmail = null;
+
+        Users userByEmail;
+
         try {
-            userByEmail = usersService.getByEmail(currentUserEmail);
+            userByEmail = usersService.getByEmail(email);
         } catch (RecordNotFoundException e) {
             model.addAttribute("notFound", "Няма открит акаунт, асоцииран с този имейл!");
-            return "forward:/account";
+            return "reset-password";
         }
-//        Users user = usersService.getByEmail(currentUserEmail);
-        if (userByEmail == null) {
-            return "redirect:/account";
+
+        PasswordResetToken resetToken = null;
+
+        try {
+            resetToken = resetPasswordService.getByUserId(userByEmail.getId());
+        } catch (RecordNotFoundException e) {
+            System.out.println(e.getMessage());
+        }
+
+        if(resetToken != null) {
+            model.addAttribute("error", "Вече сте заявили нулиране на паролата. Моля, проверете имейла си!");
+            return "reset-password";
         }
 
         String token = UUID.randomUUID().toString();
@@ -138,9 +145,10 @@ public class ResetPasswordController {
         resetPasswordService.createNewResetPasswordToken(request);
 
         String resetPasswordLink = appBaseUrl + "/new-password/" + token;
-        sendResetPasswordEmail(currentUserEmail, resetPasswordLink);
+        sendResetPasswordEmail(email, resetPasswordLink);
 
-        return "forward:/account";
+        model.addAttribute("emailSent", "Изпратен ви бе имейл за възстановяване на паролата. Проверете входящата си поща!");
+        return "reset-password";
     }
 
     @GetMapping("/new-password/{token}")
@@ -149,11 +157,18 @@ public class ResetPasswordController {
         try {
             passwordResetToken = resetPasswordService.getByToken(token);
         } catch (RecordNotFoundException e) {
-            model.addAttribute("tokenError", e.getMessage());
-            return "redirect:/new-password";
+            model.addAttribute("tokenError", "Невалиден токен!");
+            return "new-password";
         }
 
-        Users userByToken = usersService.getById(passwordResetToken.getUser().getId());
+        Users userByToken;
+        try {
+            userByToken = usersService.getById(passwordResetToken.getUser().getId());
+        } catch (RecordNotFoundException e) {
+            model.addAttribute("notFound", "Няма открит акаунт, асоцииран с този имейл!");
+            return "reset-password";
+        }
+
         if(userByToken == null) {
             return "redirect:/";
         }
@@ -163,31 +178,51 @@ public class ResetPasswordController {
 
     @PostMapping("/new-password/{token}")
     public String submitNewPassword (@PathVariable("token") String token, @ModelAttribute(name="request") UsersRequest request, Model model) {
+        if(securityService.isAuthenticated()){
+            if(!securityService.getAuthentication().equals(request.getEmail())) {
+                model.addAttribute("tokenError", "Въвели сте грешен имейл");
+                return "new-password";
+            }
+        }
+
         PasswordResetToken passwordResetToken;
         try {
             passwordResetToken = resetPasswordService.getByToken(token);
         } catch (RecordNotFoundException e) {
-            model.addAttribute("tokenError", e.getMessage());
+            model.addAttribute("tokenError", "Невалиден токен!");
             return "new-password";
         }
 
-        Users userByToken = usersService.getById(passwordResetToken.getUser().getId());
+        Users userByToken;
+        try {
+            userByToken = usersService.getById(passwordResetToken.getUser().getId());
+        } catch (RecordNotFoundException e) {
+            model.addAttribute("notFound", "Няма открит акаунт, асоцииран с този имейл!");
+            return "new-password";
+        }
+
         if(userByToken == null) {
-            return "redirect:/";
+            return "new-password";
+        }
+
+        if(!request.getEmail().equals(userByToken.getEmail())) {
+            model.addAttribute("tokenError", "Въвели сте грешен имейл");
+            return "new-password";
         }
 
         if(passwordResetToken.isExpired()){
-            resetPasswordService.deleteToken(passwordResetToken.getId());
-            return "redirect:/";
+            userByToken.setPasswordResetToken(null);
+            this.usersRepository.save(userByToken);
+            model.addAttribute("tokenError", "Токенът ви е изтекъл! Ако все още искате да нулирате паролата си, подайте нова заявка!");
+            return "new-password";
         }
-
-        request.setPassword(encoder.encode(request.getPassword()));
 
         userByToken.setPasswordResetToken(null);
         this.usersRepository.save(userByToken);
         this.usersService.userUpdate(userByToken.getId(), request);
         model.addAttribute("resetSuccess", "Променихте паролата си успешно");
-        return "redirect:/account";
+
+        return "new-password";
     }
 
     private void sendResetPasswordEmail(String email, String resetPasswordLink) {
@@ -196,9 +231,10 @@ public class ResetPasswordController {
         message.setFrom("goshanski.n@gmail.com");
         message.setTo(email);
         message.setSubject("Password Reset");
-        message.setText("За да нулирате паролата си, моля кликнете на следния линк:\n\n" + resetPasswordLink);
+        message.setText("За да нулирате паролата си, моля кликнете на следния линк:\n\n"
+                + resetPasswordLink
+                +"\n\nЛинкът ще бъде активен в следващите 4 часа.");
 
-        // Send the email
         javaMailSender.send(message);
     }
 }
