@@ -44,11 +44,11 @@
     <div class="account-menu">
         <a href="/account">Профил</a>
         <a href="/account/change-password">Смяна на парола</a>
-        <a href="#account" class="deleteButton">Изтрий акаунт</a>
+        <a href="/account/delete" class="deleteButton">Изтрий акаунт</a>
     </div>
     <hr width="60%" size="3" style="margin-top: 20px;"><br>
     <div class="forms">
-        <form th:unless="${showResPass}" method="post">
+        <form th:unless="${showResPass} or ${showDelete}" method="post">
             <span style="margin-bottom: 20px; font-size: 22px;">Вашите данни</span> <br>
             <span th:if="${userUpdated}" th:text="${userUpdated}" style="background-color: Aquamarine"></span><br>
 
@@ -81,15 +81,22 @@
             <input type="checkbox" onclick="showPassword()" id="passShow"> <label for="passShow" style="font-size: 14px">покажи паролата</label>
             <br>
 
-            <input id="cPass" name="confirmPass" type="password" required placeholder="Повтори паролата" oninput="matchPassword()"> <br>
-            <br>
-
+            <input id="cPass" name="confirmPass" type="password" required placeholder="Повтори паролата" oninput="matchPassword()">
             <br>
             <span th:text="${errPass}" style="color: red;"></span>
             <span id="Message" style="color: red;"></span>
             <br>
 
             <input id="subm" type="Submit" value="Смяна на паролата"> <br><br>
+        </form>
+        <form th:if="${showDelete}" th:action="@{/account/delete}" method="post">
+            <span style="margin-bottom: 20px; font-size: 20px;">Сигурни ли сте, че искате да изтриете акаунта си ЗАВИНАГИ?</span> <br>
+            <input name="password" type="password" required placeholder="Въведете вашата парола">
+            <br>
+            <span th:text="${error}" style="color: red;"></span>
+            <br>
+
+            <input id="submit" type="Submit" value="Изтрий моя акаунт"> <br>
         </form>
     </div>
     <hr width="60%" size="3"><br>

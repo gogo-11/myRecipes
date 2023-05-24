@@ -1,4 +1,4 @@
-package com.myrecipe.controller;
+package com.myrecipe.controller.rest;
 
 import com.myrecipe.entities.Comments;
 import com.myrecipe.entities.Recipes;

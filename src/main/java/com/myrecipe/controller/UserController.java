@@ -15,6 +15,8 @@ import org.apache.commons.collections4.ListUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -40,6 +42,7 @@ import com.myrecipe.entities.Recipes;
 import com.myrecipe.entities.RolesEn;
 import com.myrecipe.entities.Users;
 import com.myrecipe.entities.requests.CommentsRequest;
+import com.myrecipe.security.UserDetailsServiceImpl;
 
 @Controller
 public class UserController {
@@ -47,6 +50,8 @@ public class UserController {
     private static final int MAX_HEIGHT = 405;
     private static final int MIN_WIDTH = 700;
     private static final int MIN_HEIGHT = 400;
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
     @Autowired
     private UsersService usersService;
 
@@ -139,9 +144,30 @@ public class UserController {
             model.addAttribute("error", "Имейлът или паролата Ви са неправилни!");
 
         if (logout != null)
-            model.addAttribute("message", "You have been logged out successfully.");
+            model.addAttribute("message", "Излязохте успешно.");
 
         return "login_form";
+    }
+
+    @PostMapping("/login_form")
+    public String processLogin(@RequestParam("email") String email, Model model) {
+        try {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            // Perform authentication or further processing
+//            return "redirect:/welcome";
+        } catch (UsernameNotFoundException e) {
+            model.addAttribute("errorMessage", "User not found");
+            return "login_form";
+        }
+//        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+//
+//        if (userDetails == null) {
+//            model.addAttribute("errorMessage", "User not found");
+//            return "login_form";
+//        }
+
+        // Perform authentication or further processing
+        return "redirect:/welcome";
     }
 
     @GetMapping("/all-recipes/page/{pageNumber}")
@@ -273,7 +299,6 @@ public class UserController {
         Users currentUser = usersService.getByEmail(securityService.getAuthentication());
         Users recipeOwner = usersService.getById(recipesService.getById(id).getUser().getId());
 
-//        model.addAttribute("currentUser", currentUser);
         Recipes recipe;
         try{
             recipe = recipesService.getById(id);
@@ -647,6 +672,7 @@ public class UserController {
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
         }
+
         if (bindingResult.hasErrors()) {
             return "account";
         }
@@ -687,5 +713,34 @@ public class UserController {
         recipesService.recipeUpdate(id, request);
 
         return "redirect:/my-recipes";
+    }
+
+    @GetMapping("/account/delete")
+    public String showDeleteAccountConfirmation (Model model) {
+        if(!securityService.isAuthenticated()){
+            return "redirect:/login_form";
+        }
+
+
+        model.addAttribute("showDelete", "Show delete confirmation form");
+        return "forward:/account";
+    }
+
+    @PostMapping("account/delete")
+    public String deleteUserProfile (@ModelAttribute("request") UsersRequest request, Model model) {
+        if(!securityService.isAuthenticated()){
+            return "redirect:/login_form";
+        }
+
+        Users currentUser = usersService.getByEmail(securityService.getAuthentication());
+        request.setEmail(securityService.getAuthentication());
+
+        if(!encoder.matches(request.getPassword(),currentUser.getPassword())) {
+            model.addAttribute("error", "Неправилна парола!");
+            return "account";
+        }
+
+        usersService.deleteUser(request);
+        return "redirect:/";
     }
 }

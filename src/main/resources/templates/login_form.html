@@ -56,6 +56,9 @@
             <input id="pass" name="password" type="password" required placeholder="Парола"><br>
             <input type="checkbox" onclick="showPassword()" id="passShow"> <label for="passShow" style="font-size: 14px">покажи паролата</label>
             <br><span th:text="${error}" style="color: red;"></span>
+            <span th:text="${param.error}" style="color: red;"></span>
+            <span th:text="${errorMessage}" style="color: red;"></span>
+
             <br>
 
             <input type="Submit" value="Влез"> <span><a href=""></a></span>
