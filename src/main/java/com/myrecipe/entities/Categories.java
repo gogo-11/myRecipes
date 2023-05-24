@@ -12,13 +12,13 @@ package com.myrecipe.entities;
  * {@link #DOUGH}
  */
 public enum Categories {
-    MEAT("месни"),
-    MEATLESS("безмесни"),
-    DESSERTS("десерти"),
-    ALAMINUTES("аламинути"),
-    SOUPS("супи"),
-    SALADS("салати"),
-    DOUGH("тестени");
+    MEAT("Месни"),
+    MEATLESS("Безмесни"),
+    DESSERTS("Десерти"),
+    ALAMINUTES("Аламинути"),
+    SOUPS("Супи"),
+    SALADS("Салати"),
+    DOUGH("Тестени");
 
     private final String explanation;
 

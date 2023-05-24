@@ -111,7 +111,7 @@ main {
 }
 
 .leftSpl {
-    /*padding-top: 102px;*/
+    text-align: left;
     padding: 20px;
     font-size: 20px;
     color: #595959;
@@ -480,11 +480,15 @@ footer a:hover {
   }
 
   .content {
-      width: 90%;
+      width: 100%;
+      padding:auto;
+      margin: auto;
+      text-align: left;
   }
 
   .leftSpl{
     margin-top: 20px;
+    float: left;
   }
 
   .forms{

@@ -57,6 +57,7 @@ function showMenu() {
     const cookingSteps = document.getElementById("cookingSteps");
     const category = document.getElementById("category");
     const products = document.getElementById("products");
+    const image = document.getElementById("image");
     const button = document.getElementById("button");
 
         function checkInputs() {
@@ -65,6 +66,7 @@ function showMenu() {
                   cookingTime.value !== cookingTime.defaultValue ||
                   cookingSteps.value !== cookingSteps.defaultValue ||
                   category.value !== category.defaultValue ||
+                  (image.value !== null && image.value !== image.defaultValue) ||
                   products.value !== products.defaultValue) {
                 button.disabled = false;
               } else {
@@ -78,5 +80,6 @@ function showMenu() {
     cookingSteps.addEventListener("input", checkInputs);
     category.addEventListener("input", checkInputs);
     products.addEventListener("input", checkInputs);
+    image.addEventListener("input", checkInputs);
     }
 

@@ -49,7 +49,7 @@
             <img th:unless="${recipe.image}" src="/img/missing-image.jpg"
                  alt="Recipe image" width="300px">
             <h3 th:text="${recipe.recipeName}"></h3>
-            <p>Категория</p>
+            <p>Категория: <span th:text="${recipe.category.getExplanation()}"></span></p>
             <a th:href="@{/view-recipe/{id}(id=${recipe.id})}">Виж рецептата</a>
         </li>
     </ul>
