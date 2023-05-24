@@ -71,14 +71,14 @@
                 <option value="SALADS">Салати</option>
                 <option value="DOUGH">Тестени</option>
             </datalist>
-            <br><br>
+            <br>
 
             <label>Тайна ли е рецептата</label><br>
             <input type="radio" name="isPrivate" value="false" checked>Не
             <input type="radio" name="isPrivate" value="true">Да
-            <br><br>
+            <br>
 
-            <input type="file" name="imageFile" accept=".jpg" required>
+            <input type="file" name="imageFile" accept=".jpg">
             <br><span th:text="${errorMessage}" style="color: red;"></span><br>
 
             <input type="Submit" value="Създай рецепта">

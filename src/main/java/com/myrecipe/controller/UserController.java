@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.myrecipe.entities.requests.CommentsRequest;
 import org.apache.commons.collections4.ListUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,11 +39,14 @@ import com.myrecipe.entities.Comments;
 import com.myrecipe.entities.Recipes;
 import com.myrecipe.entities.RolesEn;
 import com.myrecipe.entities.Users;
+import com.myrecipe.entities.requests.CommentsRequest;
 
 @Controller
 public class UserController {
-    private static final int MAX_WIDTH = 1920;
-    private static final int MAX_HEIGHT = 1080;
+    private static final int MAX_WIDTH = 720;
+    private static final int MAX_HEIGHT = 405;
+    private static final int MIN_WIDTH = 700;
+    private static final int MIN_HEIGHT = 400;
     @Autowired
     private UsersService usersService;
 
@@ -52,7 +54,7 @@ public class UserController {
     private RecipesService recipesService;
 
     @Autowired
-    CommentsService commentsService;
+    private CommentsService commentsService;
 
     @Autowired
     private SecurityService securityService;
@@ -330,7 +332,7 @@ public class UserController {
     @PostMapping("/add-recipe")
     public String addRecipe (@ModelAttribute(name="request") RecipesRequest request, @RequestParam("imageFile") MultipartFile imageFile, Model model) {
         if (!securityService.isAuthenticated()) {
-            return "redirect:/";
+            return "redirect:/login_form";
         }
         String authentication = securityService.getAuthentication();
         Users user = usersService.getByEmail(authentication);
@@ -347,10 +349,14 @@ public class UserController {
                 return "add-recipe";
             }
             try {
+                if(!ImageUtils.isImageAboveMinSizeRange(imageFile,MIN_WIDTH,MIN_HEIGHT)) {
+                    model.addAttribute("errorMessage", "Размерът на изображението е прекалено малък.\n" +
+                            "Моля качете изображение с минимални размери 700x400 (WxH)");
+                    return "add-recipe";
+                }
                 byte[] imageBytes = ImageUtils.resizeImage(imageFile, MAX_WIDTH, MAX_HEIGHT);
                 request.setImage(imageBytes);
             } catch (IOException e) {
-                // Handle exception
                 model.addAttribute("errorMessage", "Грешка при качването на изображение");
                 return "add-recipe";
             }
@@ -401,7 +407,14 @@ public class UserController {
             } else {
                 RecipesRequest request = new RecipesRequest();
                 request.setCategory(cat);
-                List<Recipes> recipesFound = recipesService.getByCategory(request);
+                List<Recipes> recipesFound = null;
+                try{
+                    recipesFound = recipesService.getByCategory(request);
+                } catch (RecordNotFoundException e) {
+                    model.addAttribute("errorCat", "Не бяха открити рецепти в посочената категория!");
+                    return "search";
+                }
+
                 if(!recipesFound.isEmpty()){
                     model.addAttribute("recipesFound", recipesFound);
                 } else {
@@ -544,51 +557,6 @@ public class UserController {
         return "account";
     }
 
-//    @GetMapping("/account/change-password")
-//    public String showChangePassForm(Model model) {
-//        if(!securityService.isAuthenticated()) {
-//            return "redirect:/";
-//        }
-//
-//        model.addAttribute("showResPass", "Showing reset password form");
-//
-//        return "forward:/account";
-//    }
-//
-//    @PostMapping("/account/change-password")
-//    public String updateUserPassword (@RequestParam("oldPass") String oldPass,
-//                                      @RequestParam("confirmPass") String confirmPass,
-//                                      @ModelAttribute UsersRequest request, Model model) {
-//        if (!securityService.isAuthenticated()) {
-//            return "redirect:/";
-//        }
-//
-//        Users user = usersService.getByEmail(securityService.getAuthentication());
-//        model.addAttribute("currentUser", user);
-//        model.addAttribute("showResPass", "Showing reset password form");
-//
-//        if(oldPass.isBlank() || oldPass == null || confirmPass.isBlank() || confirmPass == null || request.getPassword().isBlank()) {
-//            model.addAttribute("errPass", "Попълнете всички полета!");
-//            model.addAttribute("currentUser", user);
-//            return "account";
-//        }
-//
-//        if(!request.getPassword().equals(confirmPass)) {
-//            model.addAttribute("errPass", "Паролите не съвпадат!");
-//            return "account";
-//        }
-//
-//        if (!encoder.matches(oldPass, user.getPassword())) {
-//            model.addAttribute("errPass", "Грешна текуща парола парола!");
-//            return "account";
-//        }
-//
-//        usersService.userUpdate(user.getId(), request);
-//        model.addAttribute("changeSuccess", "Успешна смяна на паролата");
-//
-//        return "account";
-//    }
-
     @GetMapping("/secret-recipes")
     public String showSecretRecipes(Model model, HttpSession session) {
         if(!securityService.isAuthenticated()){
@@ -651,7 +619,7 @@ public class UserController {
     @GetMapping("/edit-recipe/{id}")
     public String showEditRecipePage(@PathVariable("id") Integer id, Model model) {
         if(!securityService.isAuthenticated()){
-            return "redirect:/welcome";
+            return "redirect:/view-recipe/" + id;
         }
 
         Recipes recipe = null;
@@ -664,7 +632,7 @@ public class UserController {
         }
 
         if(!currentUser.getId().equals(recipe.getUser().getId())){
-            return "redirect:/";
+            return "redirect:/view-recipe/" + id;
         }
 
         model.addAttribute("recipe", recipesService.getById(id));
@@ -700,9 +668,13 @@ public class UserController {
                 return "edit-recipe";
             }
             try {
+                if(!ImageUtils.isImageAboveMinSizeRange(imageFile,MIN_WIDTH,MIN_HEIGHT)) {
+                    model.addAttribute("errorMessage", "Размерът на изображението е прекалено малък.\n" +
+                            "Моля качете изображение с минимални размери 700x400 (WxH)");
+                    return "edit-recipe";
+                }
                 byte[] imageBytes = ImageUtils.resizeImage(imageFile, MAX_WIDTH, MAX_HEIGHT);
                 request.setImage(imageBytes);
-//                request.setImage(imageFile.getBytes());
             } catch (IOException e) {
                 // Handle exception
                 model.addAttribute("errorMessage", "Грешка при качването на изображение");

@@ -42,4 +42,13 @@ public class ImageUtils {
 
         return imageBytes;
     }
+
+    public static boolean isImageAboveMinSizeRange (MultipartFile image, int minWidth, int minHeight) throws IOException {
+        BufferedImage originalImage = ImageIO.read(image.getInputStream());
+
+        int originalWidth = originalImage.getWidth();
+        int originalHeight = originalImage.getHeight();
+
+        return originalWidth >= minWidth && originalHeight >= minHeight;
+    }
 }
