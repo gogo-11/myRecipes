@@ -1,4 +1,4 @@
-package com.myrecipe.controller;
+package com.myrecipe.controller.rest;
 
 import java.util.Optional;
 

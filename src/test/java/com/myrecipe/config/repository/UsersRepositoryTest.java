@@ -2,6 +2,7 @@ package com.myrecipe.config.repository;
 
 import java.util.ArrayList;
 
+import com.myrecipe.entities.PasswordResetToken;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -26,7 +27,9 @@ public class UsersRepositoryTest {
                 "example@mail.com",
                 "123456",
                 RolesEn.USER,
-                new ArrayList<>()));
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new PasswordResetToken()));
 
         assertThat(user).hasFieldOrPropertyWithValue("firstName", "John");
         assertThat(user).hasFieldOrPropertyWithValue("lastName", "Doe");
@@ -41,7 +44,9 @@ public class UsersRepositoryTest {
                 "example@mail.com",
                 "123456",
                 RolesEn.USER,
-                new ArrayList<>()));
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new PasswordResetToken()));
 
         userRepo.deleteAll();
 
@@ -57,7 +62,9 @@ public class UsersRepositoryTest {
                 "example@mail.com",
                 "123456",
                 RolesEn.USER,
-                new ArrayList<>()));
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new PasswordResetToken()));
 
         Users userEx = userRepo.findByEmail("example@mail.com");
 

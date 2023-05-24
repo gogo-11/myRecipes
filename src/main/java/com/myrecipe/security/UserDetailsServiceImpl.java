@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.SneakyThrows;
 
 import com.myrecipe.entities.Users;
-import com.myrecipe.exceptions.UserNotFoundException;
 import com.myrecipe.repository.UsersRepository;
 
 @Service
@@ -30,7 +29,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Users user = usersRepository.findByEmail(email);
         if (user == null) {
-            throw new UserNotFoundException(email);
+            throw new UsernameNotFoundException(email);
         }
 
         Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
