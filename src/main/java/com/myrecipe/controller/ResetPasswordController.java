@@ -3,6 +3,7 @@ package com.myrecipe.controller;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.myrecipe.entities.RolesEn;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -68,6 +69,9 @@ public class ResetPasswordController {
             return "redirect:/";
         }
 
+        if (!isUser())
+            return "redirect:/";
+
         Users user = usersService.getByEmail(securityService.getAuthentication());
         model.addAttribute("currentUser", user);
         model.addAttribute("showResPass", "Showing reset password form");
@@ -96,6 +100,9 @@ public class ResetPasswordController {
 
     @GetMapping("/reset-password")
     public String showResetPassForm (Model model) {
+        if (securityService.isAuthenticated()) {
+            return "redirect:/login_form";
+        }
         model.addAttribute("showResPass", "Showing reset password form");
 
         return "reset-password";
@@ -104,12 +111,13 @@ public class ResetPasswordController {
     @PostMapping("/reset-password")
     public String processResetPasswordForm(@RequestParam("email") String email, Model model) {
         if(securityService.isAuthenticated()){
-            // Validate the email and retrieve the user from your user repository
-            String currentUserEmail = securityService.getAuthentication();
-            if(!currentUserEmail.equals(email)){
-                model.addAttribute("error", "Имейлът, който въведохте, не е вашият!");
-                return "reset-password";
-            }
+//            // Validate the email and retrieve the user from your user repository
+//            String currentUserEmail = securityService.getAuthentication();
+//            if(!currentUserEmail.equals(email)){
+//                model.addAttribute("error", "Имейлът, който въведохте, не е вашият!");
+//                return "reset-password";
+//            }
+            return "redirect:/login_form";
         }
 
         Users userByEmail;
@@ -236,5 +244,12 @@ public class ResetPasswordController {
                 +"\n\nЛинкът ще бъде активен в следващите 4 часа.");
 
         javaMailSender.send(message);
+    }
+
+    private boolean isUser() {
+        if(securityService.isAuthenticated()){
+            return usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.USER);
+        } else
+            return  false;
     }
 }

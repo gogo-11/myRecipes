@@ -44,23 +44,23 @@
 
     <hr width="60%" size="3" style="margin-top: 20px;"><br>
     <div class="forms">
-        <form th:object="${recipe}" method="post" enctype="multipart/form-data">
+        <form th:object="${request}" method="post" enctype="multipart/form-data">
             <span style="font-size: 22px;">Информация за рецептата</span> <br>
-            <input name="recipeName" type="text" required placeholder="Име на рецептата..."><br>
+            <input name="recipeName" type="text" th:field="*{recipeName}" required placeholder="Име на рецептата..."><br>
 
-            <input name="portions" type="number" min="0" required placeholder="Порции"><br>
+            <input name="portions" type="number" min="0" th:field="*{portions}" required placeholder="Порции"><br>
 
-            <input name="cookingTime" type="number" min="0" required placeholder="Време за готвене... (в минути)">
+            <input name="cookingTime" type="number" min="0" th:field="*{cookingTime}" required placeholder="Време за готвене... (в минути)">
             <br>
 
             <input name="category" list="category" required placeholder="Избери категория"
                    pattern="MEAT|MEATLESS|DESSERTS|ALAMINUTES|SOUPS|SALADS|DOUGH">
             <br>
 
-            <textarea name="products" required placeholder="Продукти..."></textarea>
+            <textarea name="products" th:field="*{products}" required placeholder="Продукти..."></textarea>
             <br>
 
-            <textarea name="cookingSteps" required placeholder="Стъпки за приготвяне..."></textarea>
+            <textarea name="cookingSteps" th:field="*{cookingSteps}" required placeholder="Стъпки за приготвяне..."></textarea>
 
             <datalist id="category">
                 <option value="MEAT">Месни</option>
@@ -78,8 +78,16 @@
             <input type="radio" name="isPrivate" value="true">Да
             <br>
 
-            <input type="file" name="imageFile" accept=".jpg">
-            <br><span th:text="${errorMessage}" style="color: red;"></span><br>
+            <input type="file" name="image" th:field="*{image}" accept=".jpg, .jpeg">
+            <br><span th:text="${errorMessage}" style="color: red;"></span>
+            <span th:errors="*{recipeName}" style="color: red;"></span>
+            <span th:errors="*{portions}" style="color: red;"></span>
+            <span th:errors="*{products}" style="color: red;"></span>
+            <span th:errors="*{cookingSteps}" style="color: red;"></span>
+            <span th:errors="*{cookingTime}" style="color: red;"></span>
+            <span th:errors="*{image}" style="color: red;"></span>
+
+            <br>
 
             <input type="Submit" value="Създай рецепта">
         </form>

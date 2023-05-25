@@ -44,23 +44,23 @@
 
   <hr width="60%" size="3" style="margin-top: 20px;"><br>
   <div class="forms">
-    <form th:object="${recipe}" method="post" enctype="multipart/form-data">
+    <form th:object="${request}" th:action="@{/edit-recipe/__${recipe.id}__}" method="post" enctype="multipart/form-data">
       <span style="font-size: 22px;">Информация за рецептата</span> <br>
-      <input id="recipeName" name="recipeName" type="text" required placeholder="Име на рецептата..." th:value="${recipe.recipeName}"><br>
+      <input id="recipeName" name="recipeName" type="text" th:field="*{recipeName}" required placeholder="Име на рецептата..."><br>
 
-      <input id="portions" name="portions" type="number" min="0" required placeholder="Порции" th:value="${recipe.portions}"><br>
+      <input id="portions" name="portions" type="number" min="0" th:field="*{portions}" required placeholder="Порции"><br>
 
-      <input id="cookingTime" name="cookingTime" type="number" min="0" required placeholder="Време за готвене..." th:value="${recipe.cookingTime}">
+      <input id="cookingTime" name="cookingTime" type="number" min="0" th:field="*{cookingTime}" required placeholder="Време за готвене...">
       <br>
 
       <input id="category" name="category" list="categoryEnum" required placeholder="Избери категория"
-             pattern="MEAT|MEATLESS|DESSERTS|ALAMINUTES|SOUPS|SALADS|DOUGH" th:value="${recipe.category}">
+             pattern="MEAT|MEATLESS|DESSERTS|ALAMINUTES|SOUPS|SALADS|DOUGH" th:value="*{category}">
       <br>
 
-      <textarea id="products" name="products" required placeholder="Продукти..." th:text="${recipe.products}"></textarea>
+      <textarea id="products" name="products" th:field="*{products}" required placeholder="Продукти..."></textarea>
       <br>
 
-      <textarea id="cookingSteps" name="cookingSteps" required placeholder="Стъпки за приготвяне..." th:text="${recipe.cookingSteps}"></textarea>
+      <textarea id="cookingSteps" name="cookingSteps" th:field="*{cookingSteps}" required placeholder="Стъпки за приготвяне..."></textarea>
 
       <datalist id="categoryEnum">
         <option value="MEAT">Месни</option>
@@ -78,8 +78,15 @@
       <input type="radio" name="isPrivate" value="true">Да
       <br><br>
 
-      <input id="image" type="file" name="imageFile" accept=".jpg, .jpeg">
-      <br><span th:text="${errorMessage}" style="color: red;"></span><br>
+      <input id="image" type="file" name="image" th:field="*{image}" accept=".jpg, .jpeg">
+      <br><span th:text="${errorMessage}" style="color: red;"></span>
+      <span th:errors="*{recipeName}" style="color: red;"></span>
+      <span th:errors="*{portions}" style="color: red;"></span>
+      <span th:errors="*{products}" style="color: red;"></span>
+      <span th:errors="*{cookingSteps}" style="color: red;"></span>
+      <span th:errors="*{cookingTime}" style="color: red;"></span>
+      <span th:errors="*{image}" style="color: red;"></span>
+      <br>
 
       <input id="button" type="Submit" value="Запази промените" disabled>
     </form>

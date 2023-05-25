@@ -109,14 +109,16 @@
                             <span style="font-size: 18px;">Не сте в профила си. <a href="/login_form">Влезте</a>, за да добавите коментар</span>
                         </div>
 
-                        <form class="comment-form" sec:authorize="isAuthenticated()" th:action="@{/view-recipe/__${recipe.id}__/add-comment}" method="post">
+                        <form class="comment-form" sec:authorize="isAuthenticated()" th:action="@{/view-recipe/__${recipe.id}__/add-comment}" th:object="${request}" method="post">
                             <h3>Добави коментар</h3>
                             <span th:if="${approvalAwait}" th:text="${approvalAwait}" style="font-size: 16; color: DodgerBlue; font-style: italic;"></span>
                             <div class="form-group">
                                 <textarea name="commentText"
-                                          placeholder="Напишете вашия коментар тук..." required></textarea>
+                                          placeholder="Напишете вашия коментар тук..." th:field="*{commentText}" required></textarea>
                             </div>
-                            <input name="addComment" type="submit" value="Добави коментар">
+                            <input name="addComment" type="submit" value="Добави коментар"><br>
+                            <span th:errors="*{commentText}" style="color: red;"></span>
+                            <span th:if="${validationError}" th:text="${validationError}" style="color: red;"></span>
                         </form>
                     </div>
                     <br>

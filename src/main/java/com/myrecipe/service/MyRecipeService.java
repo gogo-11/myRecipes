@@ -1,8 +1,10 @@
 package com.myrecipe.service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import com.myrecipe.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,14 +20,14 @@ import com.myrecipe.repository.RecipesRepository;
 import com.myrecipe.repository.UsersRepository;
 import com.myrecipe.entities.Categories;
 import com.myrecipe.entities.requests.UsersRequest;
-import com.myrecipe.exceptions.DuplicateRecordFoundException;
-import com.myrecipe.exceptions.InvalidCategoryException;
-import com.myrecipe.exceptions.InvalidLoginDataException;
-import com.myrecipe.exceptions.InvalidUserRequestException;
-import com.myrecipe.exceptions.RecordNotFoundException;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class MyRecipeService implements RecipesService{
+    private static final int MAX_WIDTH = 720;
+    private static final int MAX_HEIGHT = 405;
+    private static final int MIN_WIDTH = 700;
+    private static final int MIN_HEIGHT = 400;
     @Autowired
     RecipesRepository recipesRepository;
 
@@ -84,8 +86,31 @@ public class MyRecipeService implements RecipesService{
         } else
             throw new InvalidUserRequestException("Incorrect input in field Is private in user's request!");
 
-        if(recipesRequest.getImage() != null) {
-            recipe.setImage(recipesRequest.getImage());
+//        if(recipesRequest.getImage() != null) {
+//            recipe.setImage(recipesRequest.getImage());
+//        } else
+//            throw new InvalidUserRequestException("A problem has occurred while trying to process the image!");
+        if (recipesRequest.getImage() != null && !recipesRequest.getImage().isEmpty()) {
+//            if (!recipesRequest.getImage().getContentType().equals("image/jpeg")) {
+////                model.addAttribute("errorMessage", "Моля изберете изображение с разширение \".jpg\"!");
+////                return "add-recipe";
+//                throw new ImageFormatException("Invalid extension provided! Image can only be JPEG");
+//            }
+//            try {
+//                if(!ImageUtils.isImageAboveMinSizeRange(recipesRequest.getImage(),MIN_WIDTH,MIN_HEIGHT)) {
+////                    model.addAttribute("errorMessage", "Размерът на изображението е прекалено малък.\n" +
+////                            "Моля качете изображение с минимални размери 700x400 (WxH)");
+////                    return "add-recipe";
+//                    throw new ImageFormatException("Your image is not big enough!");
+//                }
+//                byte[] imageBytes = ImageUtils.resizeImage(recipesRequest.getImage(), MAX_WIDTH, MAX_HEIGHT);
+//                recipe.setImage(imageBytes);
+//            } catch (IOException e) {
+////                model.addAttribute("errorMessage", "Грешка при качването на изображение");
+////                return "add-recipe";
+//                throw new ImageFormatException("An error occurred while trying to save your image!");
+//            }
+            recipe.setImage(setImageToRecipe(recipesRequest));
         } /*else
             throw new InvalidUserRequestException("A problem has occurred while trying to process the image!");*/
 
@@ -93,6 +118,23 @@ public class MyRecipeService implements RecipesService{
 
         recipesRepository.save(recipe);
         return new RecipesResponse("Recipe created and stored successfully");
+    }
+
+    private byte[] setImageToRecipe (RecipesRequest request) {
+        if (!request.getImage().getContentType().equals("image/jpeg")) {
+            throw new ImageFormatException("Невалидно разширение на изображението. Разширението може да бъде само JPEG.");
+        }
+        byte[] imageBytes;
+        try {
+            if(!ImageUtils.isImageAboveMinSizeRange(request.getImage(),MIN_WIDTH,MIN_HEIGHT)) {
+                throw new ImageFormatException("Изображението не съответства на минималните размери!");
+            }
+            imageBytes = ImageUtils.resizeImage(request.getImage(), MAX_WIDTH, MAX_HEIGHT);
+
+        } catch (IOException e) {
+            throw new ImageFormatException("Грешка при запазването на изображението!");
+        }
+        return imageBytes;
     }
 
     /**
@@ -285,10 +327,10 @@ public class MyRecipeService implements RecipesService{
                 recipe.get().setProducts(request.getProducts());
             }
 
-            if(request.getImage().length == 0|| request.getImage() == null){
+            if(request.getImage().isEmpty() || request.getImage() == null){
                 recipe.get().setImage(recipesRepository.getReferenceById(id).getImage());
             } else {
-                recipe.get().setImage(request.getImage());
+                recipe.get().setImage(setImageToRecipe(request));
             }
 
             recipe.get().setIsPrivate(request.getIsPrivate());
