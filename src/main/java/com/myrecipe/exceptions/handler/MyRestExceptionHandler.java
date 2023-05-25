@@ -70,4 +70,13 @@ public class MyRestExceptionHandler {
 
         return new ResponseEntity<> (response, HttpStatus.BAD_REQUEST);
     }
+    @ExceptionHandler(ImageFormatException.class)
+    public ResponseEntity<MyApiErrorResponse> handleImageFormatException (ImageFormatException e) {
+        MyApiErrorResponse response = new MyApiErrorResponse(
+                e.getMessage(),
+                "Please ensure that you uploaded a valid image!",
+                HttpStatus.BAD_REQUEST);
+
+        return new ResponseEntity<> (response, HttpStatus.BAD_REQUEST);
+    }
 }

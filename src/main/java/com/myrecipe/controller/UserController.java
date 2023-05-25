@@ -5,11 +5,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 
 import org.apache.commons.collections4.ListUtils;
 
@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.myrecipe.entities.requests.RecipesRequest;
 import com.myrecipe.entities.requests.UsersRequest;
@@ -34,7 +33,6 @@ import com.myrecipe.exceptions.RecordNotFoundException;
 import com.myrecipe.security.SecurityService;
 import com.myrecipe.service.RecipesService;
 import com.myrecipe.service.UsersService;
-import com.myrecipe.service.ImageUtils;
 import com.myrecipe.service.CommentsService;
 import com.myrecipe.entities.Categories;
 import com.myrecipe.entities.Comments;
@@ -43,6 +41,9 @@ import com.myrecipe.entities.RolesEn;
 import com.myrecipe.entities.Users;
 import com.myrecipe.entities.requests.CommentsRequest;
 import com.myrecipe.security.UserDetailsServiceImpl;
+import com.myrecipe.exceptions.DuplicateRecordFoundException;
+import com.myrecipe.exceptions.ImageFormatException;
+import com.myrecipe.exceptions.InvalidUserRequestException;
 
 @Controller
 public class UserController {
@@ -50,6 +51,9 @@ public class UserController {
     private static final int MAX_HEIGHT = 405;
     private static final int MIN_WIDTH = 700;
     private static final int MIN_HEIGHT = 400;
+    private static final String CYRILLIC_REGEX = "[\\p{IsCyrillic}\\p{Punct}\\p{Zs}]+";
+    private static final String CYRILLIC_NAME_REGEX = "[\\p{IsCyrillic}\\p{Zs}]+";
+
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
     @Autowired
@@ -84,13 +88,14 @@ public class UserController {
         if (securityService.isAuthenticated()) {
             return "redirect:/";
         }
-//        model.addAttribute("request", new Users());
+
+        model.addAttribute("request", new UsersRequest());
 
         return "registration";
     }
 
     @PostMapping("/registration")
-    public String registration (@ModelAttribute(name="request") UsersRequest request, BindingResult bindingResult, Model model) {
+    public String registration (@Valid @ModelAttribute(name="request") UsersRequest request, BindingResult bindingResult, Model model) {
         if (securityService.isAuthenticated()) {
             return "redirect:/";
         }
@@ -98,35 +103,18 @@ public class UserController {
             return "registration";
         }
 
-        String emailRegexSqlInjection = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
-        String emailRegexPattern = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@"
-                + "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
-        String nameRegex = "^[a-zA-Z'-]+$";
-
         request.setRole(RolesEn.USER);
 
-        if (!request.getFirstName().matches(nameRegex)) {
-            model.addAttribute("errFirstName", "Invalid input. Първото Ви име може да съдържа само букви от латинската азбука!");
+        try {
+            usersService.createUser(request);
+        } catch (DuplicateRecordFoundException e) {
+            model.addAttribute("error", "Вече е регистриран потребител с посочения имейл адрес!");
+            return "registration";
+        } catch (InvalidUserRequestException е) {
+            model.addAttribute("error", "Попълнете всички полета!");
             return "registration";
         }
 
-        if (!request.getLastName().matches(nameRegex)) {
-            model.addAttribute("errLastName", "Invalid input. Фамилното Ви име може да съдържа само букви от латинската азбука!");
-            return "registration";
-        }
-
-        if(!Pattern.compile(emailRegexPattern).matcher(request.getEmail()).matches() &&
-            Pattern.compile(emailRegexSqlInjection).matcher(request.getEmail()).matches()) {
-            model.addAttribute("errEmail", "Невалиден имейл!");
-            return "registration";
-        }
-
-        if(request.getPassword().isBlank()) {
-            model.addAttribute("errPass", "Моля въведете парола!");
-            return "registration";
-        }
-
-        usersService.createUser(request);
         securityService.autoLogin(request.getEmail(), request.getPassword());
 
         return "redirect:/welcome";
@@ -151,22 +139,19 @@ public class UserController {
 
     @PostMapping("/login_form")
     public String processLogin(@RequestParam("email") String email, Model model) {
+        if (securityService.isAuthenticated()) {
+            if(usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)) {
+                return "redirect:/admin-panel";
+            }
+            return "redirect:/";
+        }
         try {
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-            // Perform authentication or further processing
-//            return "redirect:/welcome";
         } catch (UsernameNotFoundException e) {
             model.addAttribute("errorMessage", "User not found");
             return "login_form";
         }
-//        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-//
-//        if (userDetails == null) {
-//            model.addAttribute("errorMessage", "User not found");
-//            return "login_form";
-//        }
 
-        // Perform authentication or further processing
         return "redirect:/welcome";
     }
 
@@ -204,6 +189,13 @@ public class UserController {
         RecipesRequest request = new RecipesRequest();
         request.setCategory(recipe.getCategory());
 
+        String validationError = (String) session.getAttribute("validationError");
+        model.addAttribute("validationError", validationError);
+//        if((validationError == null || validationError.isBlank())) {
+//            return "redirect:/view-recipe";
+//        }
+        session.setAttribute("validationError", null);
+
         List<Recipes> threeRecipes = null;
         try {
             threeRecipes = recipesService.getRandomThreeByCategory(recipe.getId(), request);
@@ -221,7 +213,7 @@ public class UserController {
         }
 
         String valid = (String) session.getAttribute("valid");
-        if(recipe.getIsPrivate() && (valid == null || valid.isBlank())) {
+        if(Boolean.TRUE.equals(recipe.getIsPrivate()) && (valid == null || valid.isBlank())) {
             return "redirect:/";
         }
         session.setAttribute("valid", null);
@@ -240,7 +232,7 @@ public class UserController {
             }
         session.setAttribute("commentDeleted", null);
 
-        List<String> recipeProducts = new ArrayList<String>(Arrays.asList(recipe.getProducts().split(",")));
+        List<String> recipeProducts = new ArrayList<>(Arrays.asList(recipe.getProducts().split("[ ,.]+")));
         model.addAttribute("recipeProducts", recipeProducts);
 
         if(Boolean.TRUE.equals(recipe.getIsPrivate())){
@@ -249,6 +241,7 @@ public class UserController {
             }
         }
         model.addAttribute("recipe", recipe);
+        model.addAttribute("request", new CommentsRequest());
 
         if(securityService.isAuthenticated()){
             String authentication = securityService.getAuthentication();
@@ -263,6 +256,8 @@ public class UserController {
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
         }
+        if(!isUser())
+            return "redirect:/view-recipe/" + id;
 
         Users currentUser = usersService.getByEmail(securityService.getAuthentication());
         Users recipeOwner = usersService.getById(recipesService.getById(id).getUser().getId());
@@ -296,6 +291,9 @@ public class UserController {
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
         }
+        if(!isUser())
+            return "redirect:/view-recipe/" + id;
+
         Users currentUser = usersService.getByEmail(securityService.getAuthentication());
         Users recipeOwner = usersService.getById(recipesService.getById(id).getUser().getId());
 
@@ -323,9 +321,15 @@ public class UserController {
     }
 
     @PostMapping("/view-recipe/{id}/add-comment")
-    public String addNewComment(@PathVariable("id") Integer id, @ModelAttribute(name="request") CommentsRequest request, Model model, HttpSession session) {
+    public String addNewComment(@PathVariable("id") Integer id,
+                                @Valid @ModelAttribute(name="request") CommentsRequest request,
+                                BindingResult result, Model model, HttpSession session) {
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
+        }
+        if(result.hasErrors()){
+            session.setAttribute("validationError", result.getFieldError("commentText").getDefaultMessage());
+            return "redirect:/view-recipe/"+id;
         }
 
         try{
@@ -349,15 +353,25 @@ public class UserController {
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
         }
-        model.addAttribute("request", new Recipes());
+        if(!isUser())
+            return "redirect:/";
+        model.addAttribute("request", new RecipesRequest());
 
         return "add-recipe";
     }
 
     @PostMapping("/add-recipe")
-    public String addRecipe (@ModelAttribute(name="request") RecipesRequest request, @RequestParam("imageFile") MultipartFile imageFile, Model model) {
+    public String addRecipe (@Valid @ModelAttribute(name="request") RecipesRequest request,BindingResult result,
+            /*@RequestParam("image") MultipartFile imageFile,*/ Model model) {
         if (!securityService.isAuthenticated()) {
             return "redirect:/login_form";
+        }
+
+        if(!isUser())
+            return "redirect:/";
+
+        if(result.hasErrors()) {
+            return "add-recipe";
         }
         String authentication = securityService.getAuthentication();
         Users user = usersService.getByEmail(authentication);
@@ -368,27 +382,20 @@ public class UserController {
             return "add-recipe";
         }
 
-        if (!imageFile.isEmpty()) {
-            if (!imageFile.getContentType().equals("image/jpeg")) {
-                model.addAttribute("errorMessage", "Моля изберете изображение с разширение \".jpg\"!");
-                return "add-recipe";
-            }
-            try {
-                if(!ImageUtils.isImageAboveMinSizeRange(imageFile,MIN_WIDTH,MIN_HEIGHT)) {
-                    model.addAttribute("errorMessage", "Размерът на изображението е прекалено малък.\n" +
-                            "Моля качете изображение с минимални размери 700x400 (WxH)");
-                    return "add-recipe";
-                }
-                byte[] imageBytes = ImageUtils.resizeImage(imageFile, MAX_WIDTH, MAX_HEIGHT);
-                request.setImage(imageBytes);
-            } catch (IOException e) {
-                model.addAttribute("errorMessage", "Грешка при качването на изображение");
-                return "add-recipe";
-            }
-        }
-
         request.setUserId(user.getId());
-        recipesService.createRecipe(request, user.getId());
+
+        try {
+            recipesService.createRecipe(request, user.getId());
+        } catch (DuplicateRecordFoundException e) {
+            model.addAttribute("errorMessage", "Вече има рецепта със същото име");
+            return "add-recipe";
+        } catch (InvalidUserRequestException e) {
+            model.addAttribute("errorMessage", "Попълнете правилно всички полета");
+            return "add-recipe";
+        } catch (ImageFormatException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "add-recipe";
+        }
 
         return "redirect:/my-recipes";
     }
@@ -412,6 +419,9 @@ public class UserController {
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
         }
+        if(!isUser())
+            return "redirect:/";
+
         String authentication = securityService.getAuthentication();
         Users user = usersService.getByEmail(authentication);
 
@@ -522,6 +532,8 @@ public class UserController {
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
         }
+        if(!isUser())
+            return "redirect:/";
 
         Users user = usersService.getByEmail(securityService.getAuthentication());
 
@@ -540,24 +552,25 @@ public class UserController {
         if (bindingResult.hasErrors()) {
             return "account";
         }
+        if(!isUser())
+            return "redirect:/";
 
         Users user = usersService.getByEmail(securityService.getAuthentication());
         model.addAttribute("currentUser", user);
 
-        String nameRegex = "^[a-zA-Z'-]+$";
 
         request.setRole(RolesEn.USER);
 
         if(request.getFirstName() != null) {
-            if (!request.getFirstName().matches(nameRegex)) {
-                model.addAttribute("errFirstName", "Invalid input. Първото Ви име може да съдържа само букви от латинската азбука!");
+            if (!request.getFirstName().matches(CYRILLIC_NAME_REGEX)) {
+                model.addAttribute("errFirstName", "Първото Ви име трябва да е написано на кирилица!");
                 return "account";
             }
         }
 
         if(request.getFirstName() != null) {
-            if (!request.getLastName().matches(nameRegex)) {
-                model.addAttribute("errLastName", "Invalid input. Фамилното Ви име може да съдържа само букви от латинската азбука!");
+            if (!request.getLastName().matches(CYRILLIC_NAME_REGEX)) {
+                model.addAttribute("errLastName", "Фамилното Ви име трябва да е написано на кирилица!");
                 return "account";
             }
         }
@@ -587,9 +600,8 @@ public class UserController {
         if(!securityService.isAuthenticated()){
             return "redirect:/welcome";
         }
-        if(usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)){
-            return "redirect:/welcome";
-        }
+        if(!isUser())
+            return "redirect:/";
 
         model.addAttribute("recipe", new Recipes());
         return "secret-recipes";
@@ -611,9 +623,8 @@ public class UserController {
         currentUser.setEmail(securityService.getAuthentication());
         currentUser.setPassword(password);
 
-        if(loggedInUser.getRole().equals(RolesEn.ADMIN)){
-            return "redirect:/welcome";
-        }
+        if(!isUser())
+            return "redirect:/";
 
         if(password.isBlank()) {
             model.addAttribute("errorMessage", "Моля въведете парола!");
@@ -646,6 +657,8 @@ public class UserController {
         if(!securityService.isAuthenticated()){
             return "redirect:/view-recipe/" + id;
         }
+        if(!isUser())
+            return "redirect:/";
 
         Recipes recipe = null;
         Users currentUser = usersService.getByEmail(securityService.getAuthentication());
@@ -659,60 +672,50 @@ public class UserController {
         if(!currentUser.getId().equals(recipe.getUser().getId())){
             return "redirect:/view-recipe/" + id;
         }
+        RecipesRequest request = new RecipesRequest();
+        request.setUserId(recipe.getUser().getId());
+        request.setRecipeName(recipe.getRecipeName());
+        request.setPortions(recipe.getPortions());
+        request.setProducts(recipe.getProducts());
+        request.setCookingSteps(recipe.getCookingSteps());
+        request.setCookingTime(recipe.getCookingTime());
+        request.setIsPrivate(recipe.getIsPrivate());
+        request.setCategory(recipe.getCategory());
+
 
         model.addAttribute("recipe", recipesService.getById(id));
+        model.addAttribute("request", request);
 
         return "edit-recipe";
     }
 
     @PostMapping("/edit-recipe/{id}")
-    public String updateRecipeInfo(@ModelAttribute(name="request") RecipesRequest request,
-                                   @PathVariable("id") Integer id, @RequestParam("imageFile") MultipartFile imageFile,
-                                   BindingResult bindingResult, Model model) {
+    public String updateRecipeInfo(@Valid @ModelAttribute(name="request") RecipesRequest request, BindingResult bindingResult,
+                                   @PathVariable("id") Integer id,  Model model) {
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
         }
-
-        if (bindingResult.hasErrors()) {
-            return "account";
-        }
-
+        if(!isUser())
+            return "redirect:/";
         Users user = usersService.getByEmail(securityService.getAuthentication());
         Recipes currentRecipe = recipesService.getById(id);
-
         model.addAttribute("recipe", currentRecipe);
 
-        if(request.getCategory() == null || request.getPortions() == null || request.getRecipeName().isBlank() ||
-                request.getProducts().isBlank() || request.getCookingSteps().isBlank() || request.getCookingTime() == null) {
+        if (bindingResult.hasFieldErrors()) {
+            return "edit-recipe";
+        }
+
+        if(request.getCategory().toString().isEmpty() || request.getPortions().toString().isBlank() || request.getRecipeName().isBlank() ||
+                request.getProducts().isBlank() || request.getCookingSteps().isBlank() || request.getCookingTime().toString().isBlank()) {
             model.addAttribute("errorMessage", "Попълнете всички полета!");
             return "add-recipe";
         }
 
-        if (!imageFile.isEmpty()) {
-            if (!imageFile.getContentType().equals("image/jpeg") && !imageFile.getContentType().equals("image/jpg")) {
-                model.addAttribute("errorMessage", "Моля изберете изображение с разширение \".jpg\"!");
-                return "edit-recipe";
-            }
-            try {
-                if(!ImageUtils.isImageAboveMinSizeRange(imageFile,MIN_WIDTH,MIN_HEIGHT)) {
-                    model.addAttribute("errorMessage", "Размерът на изображението е прекалено малък.\n" +
-                            "Моля качете изображение с минимални размери 700x400 (WxH)");
-                    return "edit-recipe";
-                }
-                byte[] imageBytes = ImageUtils.resizeImage(imageFile, MAX_WIDTH, MAX_HEIGHT);
-                request.setImage(imageBytes);
-            } catch (IOException e) {
-                // Handle exception
-                model.addAttribute("errorMessage", "Грешка при качването на изображение");
-                return "edit-recipe";
-            }
-        } else {
-            request.setImage(currentRecipe.getImage());
-        }
+        request.setUserId(user.getId());
 
         recipesService.recipeUpdate(id, request);
 
-        return "redirect:/my-recipes";
+        return "redirect:/view-recipe/"+id;
     }
 
     @GetMapping("/account/delete")
@@ -721,26 +724,42 @@ public class UserController {
             return "redirect:/login_form";
         }
 
+        if(!isUser())
+            return "redirect:/";
 
         model.addAttribute("showDelete", "Show delete confirmation form");
         return "forward:/account";
     }
 
     @PostMapping("account/delete")
-    public String deleteUserProfile (@ModelAttribute("request") UsersRequest request, Model model) {
+    public String deleteUserProfile (@ModelAttribute("request") UsersRequest request, Model model, HttpSession session) {
         if(!securityService.isAuthenticated()){
             return "redirect:/login_form";
         }
+
+        if(!isUser())
+            return "redirect:/";
 
         Users currentUser = usersService.getByEmail(securityService.getAuthentication());
         request.setEmail(securityService.getAuthentication());
 
         if(!encoder.matches(request.getPassword(),currentUser.getPassword())) {
             model.addAttribute("error", "Неправилна парола!");
+            Users user = usersService.getByEmail(securityService.getAuthentication());
+            model.addAttribute("currentUser", user);
+            model.addAttribute("showDelete", "Show delete confirmation form");
             return "account";
         }
 
         usersService.deleteUser(request);
+        session.invalidate();
         return "redirect:/";
+    }
+
+    private boolean isUser() {
+        if(securityService.isAuthenticated()){
+            return usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.USER);
+        } else
+            return  false;
     }
 }

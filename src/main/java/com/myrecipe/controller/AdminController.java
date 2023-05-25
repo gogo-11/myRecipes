@@ -2,12 +2,16 @@ package com.myrecipe.controller;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import com.myrecipe.entities.Comments;
 import com.myrecipe.entities.requests.CommentsRequest;
+import com.myrecipe.exceptions.DuplicateRecordFoundException;
+import com.myrecipe.exceptions.InvalidUserRequestException;
 import com.myrecipe.service.CommentsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,9 +49,9 @@ public class AdminController {
      *
      * @return Returns the template name
      */
-    @GetMapping("admin-panel")
+    @GetMapping("/admin-panel")
     public String showAdminPanel (Model model, HttpSession session) {
-        if(!securityService.isAuthenticated() || !usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)){
+        if(!securityService.isAuthenticated() || !isAdmin()){
             return "redirect:/";
         }
 
@@ -80,59 +84,43 @@ public class AdminController {
 
     @GetMapping("/new-admin")
     public String showAdminRegistration (Model model) {
-        if (!securityService.isAuthenticated() || !usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)) {
+        if (!securityService.isAuthenticated() || !isAdmin()) {
             return "redirect:/";
         }
+
+        model.addAttribute("request", new UsersRequest());
 
         return "new-admin";
     }
 
     @PostMapping("/new-admin")
-    public String createAdmin (@ModelAttribute(name="request") UsersRequest request, BindingResult bindingResult, Model model) {
-        if (!securityService.isAuthenticated() || !usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)) {
+    public String createAdmin (@Valid @ModelAttribute(name="request") UsersRequest request, BindingResult bindingResult, Model model) {
+        if (!securityService.isAuthenticated() || !isAdmin()) {
             return "redirect:/";
         }
         if (bindingResult.hasErrors()) {
             return "new-admin";
         }
 
-        String emailRegexSqlInjection = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
-        String emailRegexPattern = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@"
-                + "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
-        String nameRegex = "^[a-zA-Z'-]+$";
-
         request.setRole(RolesEn.ADMIN);
 
-        if (!request.getFirstName().matches(nameRegex)) {
-            model.addAttribute("errFirstName", "Invalid input. Първото Ви име може да съдържа само букви от латинската азбука!");
+        try {
+            usersService.createUser(request);
+        } catch (DuplicateRecordFoundException e) {
+            model.addAttribute("error", "Вече е регистриран потребител с посочения имейл адрес!");
+            return "new-admin";
+        } catch (InvalidUserRequestException e) {
+            model.addAttribute("error", "Попълнете всички полета!");
             return "new-admin";
         }
-
-        if (!request.getLastName().matches(nameRegex)) {
-            model.addAttribute("errLastName", "Invalid input. Фамилното Ви име може да съдържа само букви от латинската азбука!");
-            return "new-admin";
-        }
-
-        if(!Pattern.compile(emailRegexPattern).matcher(request.getEmail()).matches() &&
-                Pattern.compile(emailRegexSqlInjection).matcher(request.getEmail()).matches()) {
-            model.addAttribute("errEmail", "Невалиден имейл!");
-            return "new-admin";
-        }
-
-        if(request.getPassword().isBlank()) {
-            model.addAttribute("errPass", "Моля въведете парола!");
-            return "new-admin";
-        }
-
-        usersService.createUser(request);
 
         return "redirect:/admin-panel";
     }
 
     @GetMapping("/admin-panel/{id}")
     public String showEditAdminSection (@PathVariable Integer id, Model model) {
-        if(!securityService.isAuthenticated() || !usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)){
-            return "redirect:/admin-panel";
+        if(!securityService.isAuthenticated() || !isAdmin()){
+            return "redirect:/";
         }
         Users admin;
 
@@ -155,11 +143,11 @@ public class AdminController {
         return "forward:/admin-panel";
     }
 
-    @PostMapping("admin-panel/{id}")
+    @PostMapping("/admin-panel/{id}")
     public String submitEditAdminForm (@ModelAttribute(name="request") UsersRequest request,
                                        @PathVariable("id") Integer id, BindingResult bindingResult, Model model) {
-        if(!securityService.isAuthenticated() || !usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)){
-            return "redirect:/admin-panel";
+        if(!securityService.isAuthenticated() || !isAdmin()){
+            return "redirect:/";
         }
         if (bindingResult.hasErrors()) {
             return "redirect:/admin-panel";
@@ -200,10 +188,10 @@ public class AdminController {
         return "admin-panel";
     }
 
-    @GetMapping("admin-panel/delete/{id}")
+    @GetMapping("/admin-panel/delete/{id}")
     public String showDeleteAdminForm (@PathVariable Integer id, Model model) {
-        if(!securityService.isAuthenticated() || !usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)){
-            return "redirect:/admin-panel";
+        if(!securityService.isAuthenticated() || !isAdmin()){
+            return "redirect:/";
         }
 
         if(usersService.getAllAdminUsers().size() <= 1){
@@ -219,9 +207,9 @@ public class AdminController {
 
     @PostMapping("/admin-panel/delete/{id}")
     public String deleteSelectedRecipe(@PathVariable("id") Integer id,  Model model,
-                                       HttpServletRequest httpRequest) {
-        if (!securityService.isAuthenticated() || !usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)) {
-            return "redirect:/admin-panel";
+                                       HttpServletRequest httpRequest, HttpSession session) {
+        if (!securityService.isAuthenticated() || !isAdmin()) {
+            return "redirect:/";
         }
 
         if(usersService.getAllAdminUsers().size() <= 1){
@@ -237,7 +225,7 @@ public class AdminController {
         System.out.println(pass);
         System.out.println("gogogogogogogogogogogogogogogo");
 
-        if(!encoder.matches(pass, currentUser.getPassword())) {
+        if(!encoder.matches(pass, currentUser.getPassword()) || pass.isBlank()) {
             model.addAttribute("errorMessage", "Грешна парола!");
             model.addAttribute("adminToDelete", usersService.getById(id));
             return "admin-panel";
@@ -245,12 +233,18 @@ public class AdminController {
 
         usersService.deleteAdminById(id);
         model.addAttribute("adminDeleted", "Администраторският профил е изтрит успешно!");
+        if(Objects.equals(id, currentUser.getId())) {
+            session.invalidate();
+        }
 
         return "redirect:/admin-panel";
     }
 
     @GetMapping("/admin-panel/approve-comment/{id}")
     public String approveCommentErrorCatch (@PathVariable("id") Integer id) {
+        if (!securityService.isAuthenticated() || !isAdmin()) {
+            return "redirect:/";
+        }
         Comments comment;
         try{
             comment = commentsService.getById(id);
@@ -263,8 +257,7 @@ public class AdminController {
     @PostMapping("/admin-panel/approve-comment/{id}")
     public String approveComment (@PathVariable("id") Integer id,
                                   @ModelAttribute(name="request") CommentsRequest request, Model model, HttpSession session) {
-        if(!securityService.isAuthenticated() ||
-                !usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)){
+        if(!securityService.isAuthenticated() || !isAdmin()){
             return "redirect:/admin-panel";
         }
         Comments comment;
@@ -300,8 +293,7 @@ public class AdminController {
 
     @PostMapping("/admin-panel/delete-comment/{id}")
     public String deleteCommentOnApproval (@PathVariable("id") Integer commentId, HttpSession session) {
-        if(!securityService.isAuthenticated() ||
-                !usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)){
+        if(!securityService.isAuthenticated() || !isAdmin()){
             return "redirect:/admin-panel";
         }
         Comments comment;
@@ -315,5 +307,12 @@ public class AdminController {
 
         commentsService.deleteComment(commentId);
         return "redirect:/admin-panel";
+    }
+
+    private boolean isAdmin() {
+        if(securityService.isAuthenticated()){
+            return usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN);
+        } else
+            return  false;
     }
 }

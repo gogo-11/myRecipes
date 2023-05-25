@@ -41,27 +41,32 @@
 
   <hr width="60%" size="3" style="margin-top: 20px;"><br>
   <div class="forms">
-    <form th:object="${user}" method="post">
+    <form th:object="${request}" method="post">
       <span style="font-size: 22px;">Създаване на нов администратор</span> <br>
 
-      <input name="firstName" type="text" required placeholder="Име">
+      <input name="firstName" type="text" th:field="*{firstName}" required placeholder="Име">
 
       <br><span th:text="${errFirstName}" style="color: red;"></span><br>
 
-      <input name="lastName" type="text" required placeholder="Фамилия">
+      <input name="lastName" type="text" th:field="*{lastName}" required placeholder="Фамилия">
       <br><span th:text="${errLastName}" style="color: red;"></span><br>
 
-      <input name="email" type="email" required placeholder="example@mail.com">
+      <input name="email" type="email" th:field="*{email}" required placeholder="example@mail.com">
       <br><span th:text="${errEmail}" style="color: red;"></span><br>
 
-      <input id="pass" name="password" type="password" required placeholder="Парола">
+      <input id="pass" name="password" type="password" th:field="*{password}" required placeholder="Парола">
       <br>
       <input type="checkbox" onclick="showPassword()" id="passShow"> <label for="passShow" style="font-size: 14px">покажи паролата</label>
       <br><span th:text="${errPass}" style="color: red;"></span><br>
 
       <input id="cPass" name="confirmPass" type="password" required placeholder="Повтори паролата" oninput="matchPassword()"> <br>
       <span id="Message" style="color: red;"></span>
-      <br><br>
+      <span th:errors="*{firstName}" style="color: red;"></span><br>
+      <span th:errors="*{lastName}" style="color: red;"></span>
+      <span th:errors="*{email}" style="color: red;"></span>
+      <span th:errors="*{password}" style="color: red;"></span>
+      <span th:text="${error}" style="color: red;"></span>
+      <br>
 
       <input id="subm" type="Submit" value="Регистрация" disabled> <br><br>
 
