@@ -82,7 +82,7 @@
 
                     <div class="comments">
                         <h4>Коментари</h4>
-                        <span th:if="${commentDeleted}" th:text="${commentDeleted}" style="background-color: Aquamarine"></span>
+                        <span th:if="${commentDeleted}" th:text="${commentDeleted}" style="background-color: Aquamarine; font-size:16px;"></span>
 
                         <ul class="comment-list" th:if="${recipeComments}">
                             <li th:each="comment : ${recipeComments}">
@@ -119,6 +119,7 @@
                             <input name="addComment" type="submit" value="Добави коментар"><br>
                             <span th:errors="*{commentText}" style="color: red;"></span>
                             <span th:if="${validationError}" th:text="${validationError}" style="color: red;"></span>
+                            <span th:if="${error}" th:text="${error}" style="color: red;"></span>
                         </form>
                     </div>
                     <br>

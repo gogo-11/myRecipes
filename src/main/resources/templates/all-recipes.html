@@ -42,7 +42,7 @@
 <!-- Main content section with recipe list -->
 <main>
     <h2>Всички рецепти</h2><br>
-    <ul class="recipe-list">
+    <ul class="recipe-list" th:if="${recipes}">
         <li th:each="recipe: ${recipes}">
             <img th:if="${recipe.image}" th:src="@{'/recipes/image/{id}'(id=${recipe.id})}"
                  alt="Recipe image" width="300px">
@@ -53,6 +53,9 @@
             <a th:href="@{/view-recipe/{id}(id=${recipe.id})}">Виж рецептата</a>
         </li>
     </ul>
+    <div th:unless="${recipes}">
+        <span>Все още няма добавени рецепти. <a href="/add-recipe">Добави?</a></span>
+    </div>
     <div style="font-size: large" class="pagination">
         Общо рецепти [[${totalItems}]] : Страница [[${currentPage}]] от [[${totalPages}]]
         &nbsp; &nbsp; - &nbsp;
