@@ -174,7 +174,7 @@ public class MyUserService implements UsersService{
                 user.get().setLastName(userRequest.getLastName());
             }
 
-            if(userRequest.getEmail() == null) {
+            if(userRequest.getEmail() == null || userRequest.getEmail().isBlank()) {
                 user.get().setEmail(userRepository.getReferenceById(id).getEmail());
             } else {
                 user.get().setEmail(userRequest.getEmail());

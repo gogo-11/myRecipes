@@ -69,7 +69,6 @@
             <input name="submitUserData" type="Submit" value="Обнови информацията"> <br><br>
         </form>
         <form th:if="${showResPass}" th:action="@{/account/change-password}" method="post">
-<!--            <span th:if="alreadyRequested" th:text="${alreadyRequested}"></span><br>-->
             <span style="margin-bottom: 20px; font-size: 20px;">Въведете текущата си парола и желаната нова парола</span> <br>
             <span th:if="${changeSuccess}" th:text="${changeSuccess}" style="background-color: Aquamarine"></span><br>
 

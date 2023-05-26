@@ -74,10 +74,6 @@ public class UserController {
     @GetMapping({"/","/welcome"})
     public String homePage (Model model) {
         List<Recipes> recipesList = recipesService.getLastTenPublicRecipes();
-        int partitionSize = 2;
-        List<List<Recipes>> recipesRows = ListUtils.partition(recipesList, partitionSize);
-
-        model.addAttribute("recipesRows", recipesRows);
         model.addAttribute("recipes", recipesList);
 
         return "welcome";
@@ -121,13 +117,18 @@ public class UserController {
     }
 
     @GetMapping("/login_form")
-    public String showLogin (Model model, String error, String logout) {
+    public String showLogin (Model model, String error, String logout, HttpSession session) {
         if (securityService.isAuthenticated()) {
             if(usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.ADMIN)) {
                 return "redirect:/admin-panel";
             }
             return "redirect:/";
         }
+
+        String login = (String) session.getAttribute("login");
+        model.addAttribute("login", login);
+        session.setAttribute("login", null);
+
         if (error != null)
             model.addAttribute("error", "Имейлът или паролата Ви са неправилни!");
 
@@ -157,10 +158,17 @@ public class UserController {
 
     @GetMapping("/all-recipes/page/{pageNumber}")
     public String showAllRecipes(@PathVariable("pageNumber") int currentPage, Model model) {
+        if(currentPage <= 0) {
+            return "redirect:/all-recipes";
+        }
         Page<Recipes> page = recipesService.getPage(currentPage);
         int totalPages = page.getTotalPages();
         long totalItems = page.getTotalElements();
         List<Recipes> recipes = page.getContent();
+
+        if(currentPage > totalPages) {
+            return "redirect:/all-recipes/page/"+totalPages;
+        }
 
         model.addAttribute("currentPage", currentPage);
         model.addAttribute("totalPages", totalPages);
@@ -172,9 +180,7 @@ public class UserController {
 
     @GetMapping("/all-recipes")
     public String getAllPages(Model model){
-        String authentication = securityService.getAuthentication();
-        model.addAttribute("userN", authentication);
-        System.out.println("============== " + authentication);
+
         return showAllRecipes(1, model);
     }
 
@@ -191,9 +197,6 @@ public class UserController {
 
         String validationError = (String) session.getAttribute("validationError");
         model.addAttribute("validationError", validationError);
-//        if((validationError == null || validationError.isBlank())) {
-//            return "redirect:/view-recipe";
-//        }
         session.setAttribute("validationError", null);
 
         List<Recipes> threeRecipes = null;
@@ -256,11 +259,6 @@ public class UserController {
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
         }
-        if(!isUser())
-            return "redirect:/view-recipe/" + id;
-
-        Users currentUser = usersService.getByEmail(securityService.getAuthentication());
-        Users recipeOwner = usersService.getById(recipesService.getById(id).getUser().getId());
 
         Recipes recipe;
         try{
@@ -268,6 +266,9 @@ public class UserController {
         } catch (RecordNotFoundException e) {
             return "redirect:/view-recipe/" + id;
         }
+
+        Users currentUser = usersService.getByEmail(securityService.getAuthentication());
+        Users recipeOwner = usersService.getById(recipesService.getById(id).getUser().getId());
 
         Comments commentToDelete;
         try{
@@ -291,8 +292,6 @@ public class UserController {
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
         }
-        if(!isUser())
-            return "redirect:/view-recipe/" + id;
 
         Users currentUser = usersService.getByEmail(securityService.getAuthentication());
         Users recipeOwner = usersService.getById(recipesService.getById(id).getUser().getId());
@@ -349,9 +348,10 @@ public class UserController {
     }
 
     @GetMapping("/add-recipe")
-    public String showAddRecipe (Model model) {
+    public String showAddRecipe (Model model, HttpSession session) {
         if (!securityService.isAuthenticated()) {
-            return "redirect:/";
+            session.setAttribute("login", "Трябва да влезете в акаунта си, за да създадете рецепта!");
+            return "forward:/login_form";
         }
         if(!isUser())
             return "redirect:/";
@@ -361,18 +361,20 @@ public class UserController {
     }
 
     @PostMapping("/add-recipe")
-    public String addRecipe (@Valid @ModelAttribute(name="request") RecipesRequest request,BindingResult result,
-            /*@RequestParam("image") MultipartFile imageFile,*/ Model model) {
+    public String addRecipe (@Valid @ModelAttribute(name="request") RecipesRequest request,
+                             BindingResult result, Model model) {
         if (!securityService.isAuthenticated()) {
             return "redirect:/login_form";
         }
 
-        if(!isUser())
+        if(!isUser()) {
             return "redirect:/";
+        }
 
         if(result.hasErrors()) {
             return "add-recipe";
         }
+
         String authentication = securityService.getAuthentication();
         Users user = usersService.getByEmail(authentication);
 
@@ -419,8 +421,9 @@ public class UserController {
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
         }
-        if(!isUser())
+        if(!isUser()) {
             return "redirect:/";
+        }
 
         String authentication = securityService.getAuthentication();
         Users user = usersService.getByEmail(authentication);
@@ -483,8 +486,7 @@ public class UserController {
         }
         model.addAttribute("recipe", recipe);
 
-        model.addAttribute("request", new UsersRequest());
-
+        //model.addAttribute("request", new UsersRequest());
 
         return "delete-recipe";
     }
@@ -496,8 +498,9 @@ public class UserController {
             return "redirect:/";
         }
 
+        Recipes recipe;
         try{
-            Recipes recipe = recipesService.getById(id);
+            recipe = recipesService.getById(id);
         } catch (RecordNotFoundException e) {
             return "redirect:/";
         }
@@ -506,10 +509,7 @@ public class UserController {
 
         String pass = req.getParameter("passwordConfirm");
 
-        System.out.println(pass);
-        System.out.println("gogogogogogogogogogogogogogogo");
-
-        Users recipeOwner = recipesService.getById(id).getUser();
+        Users recipeOwner = recipe.getUser();
 
         if(!currentUser.getEmail().equals(recipeOwner.getEmail()) && !currentUser.getRole().equals(RolesEn.ADMIN)) {
             return "welcome";
@@ -517,7 +517,7 @@ public class UserController {
 
         if(!encoder.matches(pass, currentUser.getPassword())) {
             model.addAttribute("errorMessage", "Грешна парола!");
-            model.addAttribute("recipe", recipesService.getById(id));
+            model.addAttribute("recipe", recipe);
             return "delete-recipe";
         }
 
@@ -561,14 +561,14 @@ public class UserController {
 
         request.setRole(RolesEn.USER);
 
-        if(request.getFirstName() != null) {
+        if(!request.getFirstName().isBlank() || request.getFirstName() != null) {
             if (!request.getFirstName().matches(CYRILLIC_NAME_REGEX)) {
                 model.addAttribute("errFirstName", "Първото Ви име трябва да е написано на кирилица!");
                 return "account";
             }
         }
 
-        if(request.getFirstName() != null) {
+        if(!request.getLastName().isBlank() || request.getLastName() != null) {
             if (!request.getLastName().matches(CYRILLIC_NAME_REGEX)) {
                 model.addAttribute("errLastName", "Фамилното Ви име трябва да е написано на кирилица!");
                 return "account";
@@ -587,9 +587,13 @@ public class UserController {
             return "account";
         }
 
-        System.out.println(oldPass + "#########################################################");
+        try {
+            usersService.userUpdate(user.getId(), request);
+        } catch (RecordNotFoundException e) {
+            model.addAttribute("errPass", "Не беше намерен потребител за актуализиране");
+            return "account";
+        }
 
-        usersService.userUpdate(user.getId(), request);
         model.addAttribute("userUpdated", "Профилът Ви беше успешно актуализиран!");
 
         return "account";
@@ -603,7 +607,6 @@ public class UserController {
         if(!isUser())
             return "redirect:/";
 
-        model.addAttribute("recipe", new Recipes());
         return "secret-recipes";
     }
 
@@ -616,7 +619,6 @@ public class UserController {
             return "redirect:/welcome";
         }
 
-        // Get the currently logged-in user
         Users loggedInUser = usersService.getByEmail(securityService.getAuthentication());
 
         UsersRequest currentUser = new UsersRequest();
@@ -631,15 +633,13 @@ public class UserController {
             return "secret-recipes";
         }
 
-        // Verify the entered password against the stored password for the logged-in user
         if (securityService.isAuthenticated() && encoder.matches(password, loggedInUser.getPassword())) {
-            // If password is correct, retrieve private recipes from the database
             try{
                 List<Recipes> privateRecipes = recipesService.getUsersAllPrivateRecipes(currentUser);
                 model.addAttribute("recipes", privateRecipes);
-            }
-            catch (RecordNotFoundException e) {
+            } catch (RecordNotFoundException e) {
                 model.addAttribute("errorMessage", "Не сте добавили тайни рецепти.");
+                return "secret-recipes";
             }
 
             session.setAttribute("valid", "Valid request");
@@ -657,8 +657,9 @@ public class UserController {
         if(!securityService.isAuthenticated()){
             return "redirect:/view-recipe/" + id;
         }
-        if(!isUser())
+        if(!isUser()) {
             return "redirect:/";
+        }
 
         Recipes recipe = null;
         Users currentUser = usersService.getByEmail(securityService.getAuthentication());
@@ -683,7 +684,7 @@ public class UserController {
         request.setCategory(recipe.getCategory());
 
 
-        model.addAttribute("recipe", recipesService.getById(id));
+        model.addAttribute("recipe", recipe);
         model.addAttribute("request", request);
 
         return "edit-recipe";
@@ -695,14 +696,22 @@ public class UserController {
         if (!securityService.isAuthenticated()) {
             return "redirect:/";
         }
-        if(!isUser())
+        if(!isUser()) {
             return "redirect:/";
+        }
+
         Users user = usersService.getByEmail(securityService.getAuthentication());
         Recipes currentRecipe = recipesService.getById(id);
         model.addAttribute("recipe", currentRecipe);
 
         if (bindingResult.hasFieldErrors()) {
             return "edit-recipe";
+        }
+
+        try{
+            recipesService.getById(id);
+        } catch (RecordNotFoundException e) {
+            return "redirect:/";
         }
 
         if(request.getCategory().toString().isEmpty() || request.getPortions().toString().isBlank() || request.getRecipeName().isBlank() ||
@@ -724,8 +733,9 @@ public class UserController {
             return "redirect:/login_form";
         }
 
-        if(!isUser())
+        if(!isUser()) {
             return "redirect:/";
+        }
 
         model.addAttribute("showDelete", "Show delete confirmation form");
         return "forward:/account";
@@ -737,11 +747,14 @@ public class UserController {
             return "redirect:/login_form";
         }
 
-        if(!isUser())
+        if(!isUser()) {
             return "redirect:/";
+        }
 
         Users currentUser = usersService.getByEmail(securityService.getAuthentication());
         request.setEmail(securityService.getAuthentication());
+
+
 
         if(!encoder.matches(request.getPassword(),currentUser.getPassword())) {
             model.addAttribute("error", "Неправилна парола!");

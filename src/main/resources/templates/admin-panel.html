@@ -77,11 +77,13 @@
         <span style="margin-bottom: 20px; font-size: 22px;">Информация за администратора</span> <br>
 
         <input name="firstName" type="text" required placeholder="Име" th:value="${adminEdit.firstName}">
-        <br><br>
+        <br>
+
         <input name="lastName" type="text" required placeholder="Фамилия" th:value="${adminEdit.lastName}">
-        <br><br>
-        <input name="email" type="email" required placeholder="example@mail.com" th:value="${adminEdit.email}">
-        <br><br>
+        <br>
+        <span th:text="${error}" style="color: red;"></span>
+        <br>
+
         <input id="subm" type="Submit" value="Обнови информацията"> <br><br>
       </form>
     </div>

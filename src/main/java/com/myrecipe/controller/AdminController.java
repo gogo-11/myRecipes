@@ -14,6 +14,7 @@ import com.myrecipe.exceptions.DuplicateRecordFoundException;
 import com.myrecipe.exceptions.InvalidUserRequestException;
 import com.myrecipe.service.CommentsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,6 +33,7 @@ import com.myrecipe.service.UsersService;
 
 @Controller
 public class AdminController {
+    private static final String CYRILLIC_NAME_REGEX = "[\\p{IsCyrillic}\\p{Zs}]+";
     @Autowired
     private UsersService usersService;
 
@@ -122,9 +124,10 @@ public class AdminController {
         if(!securityService.isAuthenticated() || !isAdmin()){
             return "redirect:/";
         }
+
         Users admin;
 
-        if(id != null) {
+        if(id != null && id > 0) {
             try{
                 admin = usersService.getById(id);
             } catch (RecordNotFoundException e) {
@@ -156,34 +159,26 @@ public class AdminController {
             return "redirect:/admin-panel";
         }
 
-        String emailRegexSqlInjection = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
-        String emailRegexPattern = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@"
-                + "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
-        String nameRegex = "^[a-zA-Z'-]+$";
-
         request.setRole(RolesEn.ADMIN);
         model.addAttribute("admins", usersService.getAllAdminUsers());
 
-        if (!request.getFirstName().matches(nameRegex)) {
-            model.addAttribute("errFirstName", "Invalid input. Първото Ви име може да съдържа само букви от латинската азбука!");
-            return "admin-panel";
+        if (!request.getFirstName().isBlank() || request.getFirstName() != null) {
+            if (!request.getFirstName().matches(CYRILLIC_NAME_REGEX)) {
+                model.addAttribute("error", "Първото Ви име трябва да е написано на кирилица!");
+                return "admin-panel";
+            }
         }
 
-        if (!request.getLastName().matches(nameRegex)) {
-            model.addAttribute("errLastName", "Invalid input. Фамилното Ви име може да съдържа само букви от латинската азбука!");
-            return "admin-panel";
-        }
-
-        if(!Pattern.compile(emailRegexPattern).matcher(request.getEmail()).matches() ||
-                !Pattern.compile(emailRegexSqlInjection).matcher(request.getEmail()).matches()) {
-            model.addAttribute("errEmail", "Невалиден имейл!");
-            return "admin-panel";
+        if (!request.getLastName().isBlank() || request.getLastName() != null) {
+            if (!request.getLastName().matches(CYRILLIC_NAME_REGEX)) {
+                model.addAttribute("error", "Фамилното Ви име трябва да е написано на кирилица!");
+                return "admin-panel";
+            }
         }
 
         usersService.userUpdate(id, request);
 
         model.addAttribute("adminUpdated", "Информацията за администратора беше обновена успешно!!");
-//        model.addAttribute("admins", usersService.getAllAdminUsers());
 
         return "admin-panel";
     }
@@ -198,6 +193,17 @@ public class AdminController {
             model.addAttribute("adminDeleted",
                     "Не можете да изтриете този администратор, тъй като няма други администратори!");
             return "admin-panel";
+        }
+
+        Users user;
+        try {
+            user = usersService.getById(id);
+        } catch (RecordNotFoundException e) {
+            return "redirect:/admin-panel";
+        }
+
+        if(!user.getRole().equals(RolesEn.ADMIN)) {
+            return "redirect:/admin-panel";
         }
 
         model.addAttribute("admins", usersService.getAllAdminUsers());
@@ -218,12 +224,20 @@ public class AdminController {
             return "admin-panel";
         }
 
+        Users user;
+        try {
+            user = usersService.getById(id);
+        } catch (RecordNotFoundException e) {
+            return "redirect:/admin-panel";
+        }
+
+        if(!user.getRole().equals(RolesEn.ADMIN)) {
+            return "redirect:/admin-panel";
+        }
+
         Users currentUser = usersService.getByEmail(securityService.getAuthentication());
 
         String pass = httpRequest.getParameter("passwordConfirm");
-
-        System.out.println(pass);
-        System.out.println("gogogogogogogogogogogogogogogo");
 
         if(!encoder.matches(pass, currentUser.getPassword()) || pass.isBlank()) {
             model.addAttribute("errorMessage", "Грешна парола!");
@@ -245,9 +259,9 @@ public class AdminController {
         if (!securityService.isAuthenticated() || !isAdmin()) {
             return "redirect:/";
         }
-        Comments comment;
+
         try{
-            comment = commentsService.getById(id);
+            commentsService.getById(id);
         } catch (RecordNotFoundException e) {
             return "redirect:/admin-panel";
         }
@@ -273,8 +287,6 @@ public class AdminController {
         request.setUserId(comment.getUser().getId());
         request.setRecipeId(comment.getRecipe().getId());
         LocalDateTime localDateTime = LocalDateTime.now();
-        System.out.println("##################request date" + request.getCommentDate());
-        System.out.println("##################now date" + localDateTime);
 
         model.addAttribute("admins", usersService.getAllAdminUsers());
 
