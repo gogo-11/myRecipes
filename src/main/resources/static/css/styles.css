@@ -32,7 +32,29 @@ header {
 
 .logo h1 {
   margin: 0;
+  font-family: "Segoe Print";
+      color: rgb(255, 255, 255);
+      font-weight: bold;
+      line-height: 1.2;
 }
+
+.logo a {
+    color: white;
+    text-decoration: none;
+}
+
+.logo a:hover {
+    color: white;
+    text-decoration: none;
+}
+
+/*.my-recipes {
+  font-family: "Segoe Print";
+  color: rgb(255, 255, 255);
+  font-weight: bold;
+  line-height: 1.2;
+}*/
+
 
 nav ul {
   display: flex;
@@ -109,6 +131,16 @@ main {
     text-align: center;
     font-size:20px;
 }
+
+.content-error {
+    width: 60%;
+}
+
+  .error-image {
+    float: left;
+    width: 20%;
+    margin: 20px;
+  }
 
 .leftSpl {
     text-align: left;
@@ -484,6 +516,18 @@ footer a:hover {
       padding:auto;
       margin: auto;
       text-align: left;
+  }
+  .content-error {
+      width:100%;
+  }
+
+  .error-image {
+    float: none;
+    width: 40%;
+    margin: 10px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .leftSpl{

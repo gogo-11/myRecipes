@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="bg" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
-  <title th:text="${recipe.recipeName +' - Редактиране | MyRecipes'}"></title>
+  <title>Възникна грешка | MyRecipes</title>
 
   <link rel="stylesheet" href="/css/styles.css"/>
   <link rel="shortcut icon" href="/img/logo.ico">
@@ -32,68 +32,32 @@
       <li><a href="/welcome"> <img src="/img/home.png" width="20"></a></li>
       <li><a href="/all-recipes">Всички рецепти</a></li>
       <li><a href="/search">Потърси рецепта</a></li>
-      <li sec:authorize="hasRole('ROLE_USER')"><a href="/secret-recipes">Тайни рецепти</a></li>
+      <li sec:authorize="hasRole('ROLE_USER')"><a href="/secret-recipes" >Тайни рецепти</a></li>
       <li sec:authorize="hasRole('ROLE_USER')"><a href="/my-recipes">Мои рецепти</a></li>
       <li sec:authorize="hasRole('ROLE_USER')"><a href="/add-recipe">Добави рецепта</a></li>
       <li sec:authorize="hasRole('ROLE_USER')"><a href="/account">Профил</a></li>
+      <li sec:authorize="hasRole('ROLE_ADMIN')"><a href="/admin-panel">Администраторски панел</a></li>
     </ul>
   </nav>
 </header>
 
 <!-- Main content section with recipe list -->
 <main>
-  <h2>Редактиране на рецепта</h2><br>
+  <h2>Възникна грешка</h2><br>
 
   <hr width="60%" size="3" style="margin-top: 20px;"><br>
-  <div class="forms">
-    <form th:object="${request}" th:action="@{/edit-recipe/__${recipe.id}__}" method="post" enctype="multipart/form-data">
-      <span style="font-size: 22px;">Информация за рецептата</span> <br>
-      <input id="recipeName" name="recipeName" type="text" th:field="*{recipeName}" required placeholder="Име на рецептата..."><br>
+  <div class="content content-error" style="text-align: left; font-family: Times;">
+    <img src="/img/web-error.png" class="error-image">
+    <p th:text="${error}" style="font-size: 23px"></p>
+    <p th:if="${response}"> <strong>Съобщение: </strong><span th:text="${response.getMessage()}"></span></p>
+    <p th:if="${response}"><strong>Подробности за грешката: </strong><span th:text="${response.getDetails()}"></span></p>
+    <p th:if="${response}"><strong>Статус код: </strong><span th:text="${response.getHttpStatus()}"></span></p>
+    <p th:unless="${response}" style="font-size: 45px;">404</p>
+    <p th:unless="${response}">NOT_FOUND</p>
+    <p th:unless="${response}">Опитвате да достъпите несъществуващ адрес!</p>
 
-      <input id="portions" name="portions" type="number" min="0" th:field="*{portions}" required placeholder="Порции"><br>
-
-      <input id="cookingTime" name="cookingTime" type="number" min="0" th:field="*{cookingTime}" required placeholder="Време за готвене...">
-      <br>
-
-      <input id="category" name="category" list="categoryEnum" required placeholder="Избери категория"
-             pattern="MEAT|MEATLESS|DESSERTS|ALAMINUTES|SOUPS|SALADS|DOUGH" th:value="*{category}">
-      <br>
-
-      <textarea id="products" name="products" th:field="*{products}" required placeholder="Продукти..."></textarea>
-      <br>
-
-      <textarea id="cookingSteps" name="cookingSteps" th:field="*{cookingSteps}" required placeholder="Стъпки за приготвяне..."></textarea>
-
-      <datalist id="categoryEnum">
-        <option value="MEAT">Месни</option>
-        <option value="MEATLESS">Безмесни</option>
-        <option value="DESSERTS">Десерти</option>
-        <option value="ALAMINUTES">Аламинути</option>
-        <option value="SOUPS">Супи</option>
-        <option value="SALADS">Салати</option>
-        <option value="DOUGH">Тестени</option>
-      </datalist>
-      <br><br>
-
-      <label>Тайна ли е рецептата</label><br>
-      <input type="radio" name="isPrivate" value="false" checked>Не
-      <input type="radio" name="isPrivate" value="true">Да
-      <br><br>
-
-      <input id="image" type="file" name="image" th:field="*{image}" accept=".jpg, .jpeg">
-      <br><span th:text="${errorMessage}" style="color: red;"></span>
-      <span th:errors="*{recipeName}" style="color: red;"></span>
-      <span th:errors="*{portions}" style="color: red;"></span>
-      <span th:errors="*{products}" style="color: red;"></span>
-      <span th:errors="*{cookingSteps}" style="color: red;"></span>
-      <span th:errors="*{cookingTime}" style="color: red;"></span>
-      <span th:errors="*{image}" style="color: red;"></span>
-      <br>
-
-      <input id="button" type="Submit" value="Запази промените" disabled>
-    </form>
   </div>
-  <hr width="60%" size="3"><br>
+  <hr width="60%" size="3" style="clear: both;"><br>
 </main>
 
 <!-- Footer with copyright and links -->
@@ -128,8 +92,6 @@
   <hr sec:authorize="hasRole('ROLE_USER')">
   <li sec:authorize="hasRole('ROLE_USER')"><a href="/account">Профил</a></li>
   <hr sec:authorize="hasRole('ROLE_USER')">
-  <li sec:authorize="hasRole('ROLE_ADMIN')"><a href="/admin-panel">Администраторски панел</a></li>
-  <hr sec:authorize="hasRole('ROLE_ADMIN')">
   <li sec:authorize="!isAuthenticated()"><a href="/login_form">Вход/Регистрация</a></li>
   <hr sec:authorize="!isAuthenticated()">
   <li sec:authorize="isAuthenticated()">
