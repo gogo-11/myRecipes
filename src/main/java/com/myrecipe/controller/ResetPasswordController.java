@@ -3,7 +3,6 @@ package com.myrecipe.controller;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.myrecipe.entities.RolesEn;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -26,6 +25,7 @@ import com.myrecipe.repository.UsersRepository;
 import com.myrecipe.security.SecurityService;
 import com.myrecipe.service.ResetPasswordService;
 import com.myrecipe.service.UsersService;
+import com.myrecipe.entities.RolesEn;
 
 @Controller
 public class ResetPasswordController {
@@ -132,8 +132,7 @@ public class ResetPasswordController {
         try {
             resetToken = resetPasswordService.getByUserId(userByEmail.getId());
         } catch (RecordNotFoundException e) {
-            model.addAttribute("error", "Вече сте заявили нулиране на паролата. Моля, проверете имейла си!");
-            return "reset-password";
+            System.out.println(e.getMessage());
         }
 
         if(resetToken != null) {

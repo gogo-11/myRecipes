@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import com.myrecipe.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,6 +11,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.myrecipe.exceptions.DuplicateRecordFoundException;
+import com.myrecipe.exceptions.ImageFormatException;
+import com.myrecipe.exceptions.InvalidCategoryException;
+import com.myrecipe.exceptions.InvalidLoginDataException;
+import com.myrecipe.exceptions.InvalidUserRequestException;
+import com.myrecipe.exceptions.RecordNotFoundException;
 import com.myrecipe.entities.Users;
 import com.myrecipe.entities.Recipes;
 import com.myrecipe.entities.requests.RecipesRequest;
@@ -20,7 +25,6 @@ import com.myrecipe.repository.RecipesRepository;
 import com.myrecipe.repository.UsersRepository;
 import com.myrecipe.entities.Categories;
 import com.myrecipe.entities.requests.UsersRequest;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class MyRecipeService implements RecipesService{

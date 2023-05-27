@@ -49,9 +49,13 @@
         <form th:action="@{/login_form}" method="post">
             <legend style="font-size: 22px;">Вход</legend> <br>
 
-            Все още нямате акаунт? <a href="/registration">Регистрация</a><br><br>
-
+            Все още нямате акаунт? <a href="/registration">Регистрация</a>
+            <br>
             <span th:text="${message}"></span>
+            <span th:if="${success}" th:text="${success}" style="background-color: Aquamarine"></span>
+            <span th:if="${emailSent}" th:text="${emailSent}" style="background-color: Aquamarine"></span>
+            <br>
+
             <input name="email" type="text" required placeholder="Email">
             <br>
 

@@ -1,20 +1,14 @@
 package com.myrecipe.controller;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
-import com.myrecipe.entities.Comments;
-import com.myrecipe.entities.requests.CommentsRequest;
-import com.myrecipe.exceptions.DuplicateRecordFoundException;
-import com.myrecipe.exceptions.InvalidUserRequestException;
-import com.myrecipe.service.CommentsService;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,6 +18,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import com.myrecipe.entities.Comments;
+import com.myrecipe.entities.requests.CommentsRequest;
+import com.myrecipe.exceptions.DuplicateRecordFoundException;
+import com.myrecipe.exceptions.InvalidUserRequestException;
+import com.myrecipe.service.CommentsService;
 import com.myrecipe.entities.RolesEn;
 import com.myrecipe.entities.Users;
 import com.myrecipe.entities.requests.UsersRequest;
@@ -105,6 +104,7 @@ public class AdminController {
         }
 
         request.setRole(RolesEn.ADMIN);
+        request.setActivated(true);
 
         try {
             usersService.createUser(request);

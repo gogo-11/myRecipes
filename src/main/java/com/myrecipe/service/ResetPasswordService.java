@@ -1,9 +1,10 @@
 package com.myrecipe.service;
 
+import org.springframework.stereotype.Component;
+
 import com.myrecipe.entities.PasswordResetToken;
 import com.myrecipe.entities.requests.PasswordResetTokenRequest;
 import com.myrecipe.entities.responses.PasswordResetTokenResponse;
-import org.springframework.stereotype.Component;
 
 @Component
 public interface ResetPasswordService {

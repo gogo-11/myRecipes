@@ -1,12 +1,13 @@
 package com.myrecipe.service;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Component;
+
 import com.myrecipe.entities.Comments;
 import com.myrecipe.entities.requests.CommentsRequest;
 import com.myrecipe.entities.responses.CommentsResponse;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Optional;
 
 @Component
 public interface CommentsService {

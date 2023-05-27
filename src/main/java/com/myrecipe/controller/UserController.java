@@ -13,6 +13,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -92,6 +93,7 @@ public class UserController {
         }
 
         request.setRole(RolesEn.USER);
+        request.setActivated(false);
 
         try {
             usersService.createUser(request);
@@ -103,9 +105,9 @@ public class UserController {
             return "registration";
         }
 
-        securityService.autoLogin(request.getEmail(), request.getPassword());
+//        securityService.autoLogin(request.getEmail(), request.getPassword());
 
-        return "redirect:/welcome";
+        return "forward:/send-confirmation-email";
     }
 
     @GetMapping("/login_form")
@@ -122,7 +124,7 @@ public class UserController {
         session.setAttribute("login", null);
 
         if (error != null)
-            model.addAttribute("error", "Имейлът или паролата Ви са неправилни!");
+            model.addAttribute("error", "Въвели сте грешни данни или все още не сте потвърдили своя имейл!");
 
         if (logout != null)
             model.addAttribute("message", "Излязохте успешно.");
@@ -138,10 +140,14 @@ public class UserController {
             }
             return "redirect:/";
         }
+
         try {
             userDetailsService.loadUserByUsername(email);
         } catch (UsernameNotFoundException e) {
             model.addAttribute("errorMessage", "User not found");
+            return "login_form";
+        } catch (DisabledException e) {
+            model.addAttribute("errorMessage", "not activated");
             return "login_form";
         }
 
