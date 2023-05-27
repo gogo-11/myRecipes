@@ -1,20 +1,19 @@
 package com.myrecipe.service;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.myrecipe.entities.Comments;
-import com.myrecipe.entities.Users;
 import com.myrecipe.entities.requests.CommentsRequest;
-import com.myrecipe.entities.requests.UsersRequest;
 import com.myrecipe.entities.responses.CommentsResponse;
 import com.myrecipe.exceptions.InvalidUserRequestException;
 import com.myrecipe.exceptions.RecordNotFoundException;
 import com.myrecipe.repository.CommentsRepository;
 import com.myrecipe.repository.RecipesRepository;
 import com.myrecipe.repository.UsersRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class MyCommentService implements CommentsService{

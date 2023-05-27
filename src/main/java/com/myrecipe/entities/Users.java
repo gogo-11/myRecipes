@@ -68,4 +68,10 @@ public class Users implements Serializable {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private PasswordResetToken passwordResetToken;
+
+    @Column(name = "is_activated")
+    private boolean isActivated;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private EmailConfirmationToken emailConfirmationToken;
 }

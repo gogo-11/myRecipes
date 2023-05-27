@@ -2,13 +2,17 @@ package com.myrecipe.entities.requests;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.validation.constraints.*;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import com.myrecipe.entities.Categories;
-import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @NoArgsConstructor

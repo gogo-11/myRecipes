@@ -3,6 +3,7 @@ package com.myrecipe.service;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
 import javax.imageio.ImageIO;
 
 import net.coobird.thumbnailator.Thumbnails;

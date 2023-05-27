@@ -1,5 +1,8 @@
 package com.myrecipe.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.myrecipe.entities.PasswordResetToken;
 import com.myrecipe.entities.requests.PasswordResetTokenRequest;
 import com.myrecipe.entities.responses.PasswordResetTokenResponse;
@@ -7,10 +10,6 @@ import com.myrecipe.exceptions.InvalidUserRequestException;
 import com.myrecipe.exceptions.RecordNotFoundException;
 import com.myrecipe.repository.PasswordResetTokenRepository;
 import com.myrecipe.repository.UsersRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class MyResetPasswordService implements ResetPasswordService{
@@ -38,8 +37,8 @@ public class MyResetPasswordService implements ResetPasswordService{
     }
 
     /**
-     * @param request
-     * @return
+     * @param request gets a request object of type PasswordResetTokenRequest
+     * @return Response for successfully created and stored token
      */
     @Override
     public PasswordResetTokenResponse createNewResetPasswordToken(PasswordResetTokenRequest request) {
@@ -66,8 +65,9 @@ public class MyResetPasswordService implements ResetPasswordService{
     }
 
     /**
-     * @param id
-     * @return
+     * @param id Integer value by which a database search will be performed
+     * @return PasswordResetToken object if found in the database
+     * @throws RecordNotFoundException if a token is not found
      */
     @Override
     public PasswordResetToken getByTokenId(Integer id) {
@@ -80,6 +80,7 @@ public class MyResetPasswordService implements ResetPasswordService{
     public MyResetPasswordService(PasswordResetTokenRepository passwordResetTokenRepository) {
         this.tokenRepository = passwordResetTokenRepository;
     }
+
     /**
      * @param id
      */
