@@ -28,6 +28,14 @@ header {
   left: 0;
   width: 100%;
   z-index: 999;
+  display: flex;
+    align-items: center;
+}
+
+.logo {
+/* for vertical alignment */
+    display: flex;
+    align-items: center;
 }
 
 .logo h1 {
@@ -36,6 +44,7 @@ header {
       color: rgb(255, 255, 255);
       font-weight: bold;
       line-height: 1.2;
+      margin-left: 10px;
 }
 
 .logo a {
@@ -47,14 +56,6 @@ header {
     color: white;
     text-decoration: none;
 }
-
-/*.my-recipes {
-  font-family: "Segoe Print";
-  color: rgb(255, 255, 255);
-  font-weight: bold;
-  line-height: 1.2;
-}*/
-
 
 nav ul {
   display: flex;
