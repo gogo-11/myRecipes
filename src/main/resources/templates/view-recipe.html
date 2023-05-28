@@ -4,7 +4,7 @@
     <title th:text="${recipe.recipeName +' | MyRecipes'}"></title>
 
     <link rel="stylesheet" href="/css/styles.css"/>
-    <link rel="shortcut icon" href="/img/logo.ico">
+    <link rel="shortcut icon" href="/img/logo2.ico">
 
     <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
 </head>
@@ -24,9 +24,12 @@
 
 <!-- Header with logo and navigation menu -->
 <header>
-    <div class="logo">
-        <h1 class="my-recipes"><a href="/welcome">My recipes</a></h1>
-    </div>
+    <a href="/welcome">
+        <div class="logo">
+            <img src="/img/path2096-white.png" style="height: 40px;">
+            <h1>My recipes</h1>
+        </div>
+    </a>
     <nav>
         <ul>
             <li><a href="/welcome"> <img src="/img/home.png" width="20"></a></li>
