@@ -10,13 +10,10 @@ function showMenu() {
     const headerContainer = document.querySelector('#user-account');
 	const header = document.querySelector('header');
 
-	// Add an event listener to the window for scrolling
 	window.addEventListener('scroll', function() {
-	  // If the user has scrolled more than 60px, add the scrolled class
 	  if (window.pageYOffset > 60) {
 		headerContainer.classList.add('scrolled');
 	  } else {
-		// Otherwise, remove the scrolled class
 		headerContainer.classList.remove('scrolled');
 	  }
 	});

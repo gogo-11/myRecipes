@@ -51,16 +51,12 @@ public class UserController {
     private UserDetailsServiceImpl userDetailsService;
     @Autowired
     private UsersService usersService;
-
     @Autowired
     private RecipesService recipesService;
-
     @Autowired
     private CommentsService commentsService;
-
     @Autowired
     private SecurityService securityService;
-
     @Autowired
     private PasswordEncoder encoder;
 
@@ -104,8 +100,6 @@ public class UserController {
             model.addAttribute("error", "Попълнете всички полета!");
             return "registration";
         }
-
-//        securityService.autoLogin(request.getEmail(), request.getPassword());
 
         return "forward:/send-confirmation-email";
     }
@@ -168,8 +162,6 @@ public class UserController {
         int totalPages = page.getTotalPages();
         long totalItems = page.getTotalElements();
         List<Recipes> recipes = page.getContent();
-
-
 
         if(currentPageInt > totalPages) {
             return "redirect:/all-recipes/page/"+totalPages;
@@ -416,7 +408,7 @@ public class UserController {
                 response.getOutputStream().write(recipe.getImage());
                 response.getOutputStream().flush();
             } catch (IOException e) {
-                System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+                System.out.println("Проблем при връщане на изображение!");
             }
         }
     }
@@ -781,8 +773,7 @@ public class UserController {
 
     public boolean isNumeric(String str) {
         try {
-            Integer.parseInt(str); // For integers
-            // Double.parseDouble(str); // For floating-point numbers
+            Integer.parseInt(str);
             return true;
         } catch (NumberFormatException e) {
             return false;

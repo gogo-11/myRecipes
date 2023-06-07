@@ -50,9 +50,9 @@
     <ul class="recipe-list" th:if="${recipes}">
         <li th:each="recipe: ${recipes}">
             <img th:if="${recipe.image}" th:src="@{'/recipes/image/{id}'(id=${recipe.id})}"
-                 alt="Recipe image" width="300px">
+                 alt="Recipe image" height="150px">
             <img th:unless="${recipe.image}" src="/img/missing-image.jpg"
-                 alt="Recipe image" width="300px">
+                 alt="Recipe image" height="150px">
             <h3 th:text="${recipe.recipeName}"></h3>
             <p>Категория: <span th:text="${recipe.category.getExplanation()}"></span></p>
             <a th:href="@{/view-recipe/{id}(id=${recipe.id})}">Виж рецептата</a>
