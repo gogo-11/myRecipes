@@ -25,19 +25,14 @@ import com.myrecipe.service.UsersService;
 public class EmailConfirmationController {
     @Autowired
     private SecurityService securityService;
-
     @Autowired
     private UsersService usersService;
-
     @Autowired
     private UsersRepository usersRepository;
-
     @Autowired
     private EmailConfirmationService emailService;
-
     @Autowired
     private JavaMailSender javaMailSender;
-
     @Value("${app.base-url}")
     private String appBaseUrl;
 

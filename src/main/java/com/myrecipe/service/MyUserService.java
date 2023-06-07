@@ -54,8 +54,6 @@ public class MyUserService implements UsersService{
 
         if(!userRequest.getPassword().isBlank()) {
             user.setPassword(encoder.encode(userRequest.getPassword()));
-            System.out.println(encoder.matches(userRequest.getPassword(), user.getPassword()));
-
         } else
             throw new InvalidUserRequestException("Password field in user's request is blank!");
 

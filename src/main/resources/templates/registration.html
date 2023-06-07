@@ -22,7 +22,6 @@
     Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Изход</a>
 </div>
 
-<!-- Header with logo and navigation menu -->
 <header>
     <a href="/welcome">
         <div class="logo">
@@ -44,10 +43,7 @@
     </nav>
 </header>
 
-<!-- Main content section with recipe list -->
 <main>
-<!--    <h2>Регистрация</h2><br>-->
-
     <hr width="60%" size="3" style="margin-top: 20px;"><br>
     <div class="forms">
         <form th:object="${request}" method="post">
