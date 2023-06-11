@@ -263,7 +263,11 @@ public class MyRecipeService implements RecipesService{
     @Override
     public Page<Recipes> getPage(int pageNumber) {
         Pageable pageable = PageRequest.of(pageNumber-1,6);
-        return recipesRepository.findAllPublicRecipes(pageable);
+        if(recipesRepository.findAllPublicRecipes(pageable) != null) {
+            return recipesRepository.findAllPublicRecipes(pageable);
+        } else
+            throw new RecordNotFoundException("No recipes found!");
+
     }
 
     @Override
