@@ -78,7 +78,9 @@
                 </div>
                 <div style="clear: both; padding-top: 30px;">
                     <strong>Начин на приготвяне:</strong> <br>
-                    <span th:text="${recipe.cookingSteps}"></span>
+                    <ul style="text-align: left; list-style-type: none;">
+                        <li th:each="step: ${recipeSteps}" th:text="${step}"></li>
+                    </ul>
 
                     <div class="comments">
                         <h4>Коментари</h4>
@@ -125,12 +127,12 @@
                     Рецепти от същата категория:
                     <br><hr width="60%" size="3">
                     <div th:unless="${noSimilar}">
-                    <ul class="recipe-list" style="font-size: 20px;">
+                    <ul class="recipe-list" style="font-size: 16px;">
                         <li th:each="recipe: ${recipes}">
                             <img th:if="${recipe.image}" th:src="@{'/recipes/image/{id}'(id=${recipe.id})}"
-                                 alt="Recipe image" width="300px">
+                                 alt="Recipe image" height="150px">
                             <img th:unless="${recipe.image}" src="/img/missing-image.jpg"
-                                 alt="Recipe image" width="300px">
+                                 alt="Recipe image" height="150px">
                             <h3 th:text="${recipe.recipeName}"></h3>
                             <p>Категория: <span th:text="${recipe.category.getExplanation()}"></span></p>
                             <a th:href="@{/view-recipe/{id}(id=${recipe.id})}">Виж рецептата</a>

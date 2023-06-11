@@ -246,8 +246,11 @@ public class UserController {
         session.setAttribute("commentDeleted", null);
 
 //        List<String> recipeProducts = new ArrayList<>(Arrays.asList(recipe.getProducts().split("[ ,.]+")));
-        List<String> recipeProducts = new ArrayList<>(Arrays.asList(recipe.getProducts().split(",")));
+        List<String> recipeProducts = new ArrayList<>(Arrays.asList(recipe.getProducts().split("[\n,]+")));
         model.addAttribute("recipeProducts", recipeProducts);
+
+        List<String> recipeSteps = new ArrayList<>(Arrays.asList(recipe.getCookingSteps().split("\n")));
+        model.addAttribute("recipeSteps", recipeSteps);
 
         if(Boolean.TRUE.equals(recipe.getIsPrivate())){
             if(!securityService.getAuthentication().equals(recipe.getUser().getEmail())){

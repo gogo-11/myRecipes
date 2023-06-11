@@ -24,7 +24,7 @@ public class RecipesRequest {
 
     @NotNull
     @NotBlank
-    @Pattern(regexp = "[\\p{IsCyrillic}\\p{Punct}\\p{Zs}]+", message = "Използвайте кирилица за продукти!")
+    @Pattern(regexp = "^(?s)(?U)[\\p{IsCyrillic}\\p{P}\\p{S}\\p{Zs}\\p{N}\\r\\n]+$", message = "Използвайте кирилица за продукти!")
     private String products;
 
     @NotNull
@@ -37,7 +37,7 @@ public class RecipesRequest {
 
     @NotNull
     @NotBlank
-    @Pattern(regexp = "[\\p{IsCyrillic}\\p{Punct}\\p{Zs}]+", message = "Използвайте кирилица за стъпките на приготвяне!")
+    @Pattern(regexp = "^(?s)(?U)[\\p{IsCyrillic}\\p{P}\\p{S}\\p{Zs}\\p{N}\\r\\n]+$", message = "Използвайте кирилица за стъпките на приготвяне!")
     private String cookingSteps;
 
     @NotNull
@@ -46,11 +46,8 @@ public class RecipesRequest {
 
     private Boolean isPrivate;
 
-//    @NotNull
     private Integer userId;
 
     @NotNull
-//    @NotEmpty
-//    private byte[] image;
     private MultipartFile image;
 }
