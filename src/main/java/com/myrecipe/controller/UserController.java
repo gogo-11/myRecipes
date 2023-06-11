@@ -46,7 +46,6 @@ import com.myrecipe.exceptions.RecordNotFoundException;
 @Controller
 public class UserController {
     private static final String CYRILLIC_NAME_REGEX = "[\\p{IsCyrillic}\\p{Zs}]+";
-
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
     @Autowired
@@ -62,6 +61,13 @@ public class UserController {
 
     @GetMapping({"/","/welcome"})
     public String homePage (Model model) {
+        try {
+            recipesService.getLastTenPublicRecipes();
+        } catch (RecordNotFoundException e) {
+            model.addAttribute("error", true);
+            return "welcome";
+        }
+
         List<Recipes> recipesList = recipesService.getLastTenPublicRecipes();
         model.addAttribute("recipes", recipesList);
 
@@ -157,6 +163,11 @@ public class UserController {
         int currentPageInt = Integer.parseInt(currentPage);
         if(currentPageInt <= 0) {
             return "redirect:/all-recipes";
+        }
+        try{
+            recipesService.getPage(currentPageInt);
+        } catch (RecordNotFoundException e) {
+            model.addAttribute("errorMessage", true);
         }
         Page<Recipes> page = recipesService.getPage(currentPageInt);
         int totalPages = page.getTotalPages();
@@ -523,8 +534,13 @@ public class UserController {
             model.addAttribute("recipe", recipe);
             return "delete-recipe";
         }
+        try{
+            recipesService.deleteRecipe(id);
+        } catch (RecordNotFoundException e) {
+            model.addAttribute("error", "Не е открита рецепта с посоченият ID номер!");
+            return "my-recipes";
+        }
 
-        recipesService.deleteRecipe(id);
         model.addAttribute("recipeDeleted", "Рецептата е изтрита успешно!");
 
         return "my-recipes";
@@ -647,9 +663,7 @@ public class UserController {
 
             session.setAttribute("valid", "Valid request");
 
-            // Add the list of private recipes to the model to be displayed in the view
         } else {
-            // If password is incorrect, show error message
             model.addAttribute("errorMessage", "Грешна парола. Опитайте пак.");
         }
         return "secret-recipes";

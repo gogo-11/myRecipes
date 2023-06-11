@@ -56,7 +56,7 @@
             <a th:href="@{/view-recipe/{id}(id=${recipe.id})}">Виж рецептата</a>
         </li>
     </ul>
-    <div th:unless="${recipes}">
+    <div th:if="${error}">
         <span>Все още няма добавени рецепти. <a href="/add-recipe">Добави?</a></span>
     </div>
 </main>

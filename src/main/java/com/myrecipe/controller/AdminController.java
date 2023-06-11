@@ -155,6 +155,14 @@ public class AdminController {
         if (bindingResult.hasErrors()) {
             return "redirect:/admin-panel";
         }
+
+        try {
+            usersService.getById(id);
+        } catch (RecordNotFoundException e) {
+            model.addAttribute("error", "Няма такъв администратор!");
+            return "admin-panel";
+        }
+
         if(!usersService.getById(id).getRole().equals(RolesEn.ADMIN)) {
             return "redirect:/admin-panel";
         }

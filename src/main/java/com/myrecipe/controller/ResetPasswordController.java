@@ -142,7 +142,6 @@ public class ResetPasswordController {
 
         String token = UUID.randomUUID().toString();
 
-        // Create a new password reset token request
         PasswordResetTokenRequest request = new PasswordResetTokenRequest();
         request.setToken(token);
         request.setUserId(userByEmail.getId());
@@ -233,7 +232,6 @@ public class ResetPasswordController {
     }
 
     private void sendResetPasswordEmail(String email, String resetPasswordLink) {
-        // Create and configure your email message using JavaMailSender
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("goshanski.n@gmail.com");
         message.setTo(email);

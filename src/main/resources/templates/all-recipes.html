@@ -57,10 +57,10 @@
             <a th:href="@{/view-recipe/{id}(id=${recipe.id})}">Виж рецептата</a>
         </li>
     </ul>
-    <div th:unless="${recipes}">
+    <div th:if="${errorMessage}">
         <span>Все още няма добавени рецепти. <a href="/add-recipe">Добави?</a></span>
     </div>
-    <div style="font-size: large" class="pagination">
+    <div th:if="${recipes}" style="font-size: large" class="pagination">
         Общо рецепти [[${totalItems}]] : Страница [[${currentPage}]] от [[${totalPages}]]
         &nbsp; &nbsp; - &nbsp;
         <span th:each="i: ${#numbers.sequence(1, totalPages)}">
