@@ -3,6 +3,7 @@ package com.myrecipe.service;
 import com.myrecipe.entities.RolesEn;
 import com.myrecipe.entities.Users;
 import com.myrecipe.repository.UsersRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,7 @@ public class AdminInitializer {
     private UsersRepository repository;
     private PasswordEncoder encoder;
 
+    @Autowired
     public AdminInitializer(UsersRepository repository, PasswordEncoder encoder) {
         this.repository = repository;
         this.encoder = encoder;
@@ -38,6 +40,6 @@ public class AdminInitializer {
     }
 
     private boolean adminExists() {
-        return repository.findAllAdminUsers() != null;
+        return !repository.findAllAdminUsers().isEmpty();
     }
 }
