@@ -185,7 +185,7 @@ public class MyRecipeService implements RecipesService{
     @Override
     public List<Recipes> getRandomThreeByCategory(Integer recipeId, RecipesRequest request) {
         if (Categories.categoryExists(request.getCategory().toString())){
-            List<Recipes> recipes = recipesRepository.findByCategory(request.getCategory().toString());
+            List<Recipes> recipes = recipesRepository.findRandomThreeByCategory(request.getCategory().toString());
 
             recipes.removeIf(recipe -> recipe.getId().equals(recipeId));
 

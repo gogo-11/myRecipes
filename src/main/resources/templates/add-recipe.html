@@ -59,8 +59,8 @@
             <input name="category" list="category" required placeholder="Избери категория"
                    pattern="MEAT|MEATLESS|DESSERTS|ALAMINUTES|SOUPS|SALADS|DOUGH">
             <br>
-
-            <textarea name="products" th:field="*{products}" required placeholder="Продукти..."></textarea>
+            <label for="product">Продукти (по един на ред) / Пример: картофи - 1 кг /</label><br>
+            <textarea id="product" name="products" th:field="*{products}" required placeholder="Продукти..."></textarea>
             <br>
 
             <textarea name="cookingSteps" th:field="*{cookingSteps}" required placeholder="Стъпки за приготвяне..."></textarea>
