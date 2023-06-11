@@ -161,14 +161,16 @@ public class UserController {
             return "forward:/all-recipes";
         }
         int currentPageInt = Integer.parseInt(currentPage);
-        if(currentPageInt <= 0) {
-            return "redirect:/all-recipes";
-        }
         try{
             recipesService.getPage(currentPageInt);
         } catch (RecordNotFoundException e) {
             model.addAttribute("errorMessage", true);
+            return "redirect:/welcome";
         }
+        if(currentPageInt <= 0) {
+            return "redirect:/all-recipes";
+        }
+
         Page<Recipes> page = recipesService.getPage(currentPageInt);
         int totalPages = page.getTotalPages();
         long totalItems = page.getTotalElements();
