@@ -22,7 +22,6 @@
     Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Изход</a>
 </div>
 
-<!-- Header with logo and navigation menu -->
 <header>
     <a href="/welcome">
         <div class="logo">
@@ -44,7 +43,6 @@
     </nav>
 </header>
 
-<!-- Main content section with recipe list -->
 <main>
     <h2>Всички рецепти</h2><br>
     <span th:text="${error}" style="color: red;"></span>
@@ -72,7 +70,6 @@
     </div>
 </main>
 
-<!-- Footer with copyright and links -->
 <footer>
     <p>&copy; 2023 MyRecipes. Всички права запазени.</p>
     <nav>
@@ -83,7 +80,6 @@
     </nav>
 </footer>
 
-<!-- Hamburger icon and small menu for mobile devices -->
 <div id="menu-icon" onclick="showMenu()">
     &#9776;
 </div>
