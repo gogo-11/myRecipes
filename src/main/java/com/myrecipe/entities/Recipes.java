@@ -44,8 +44,8 @@ public class Recipes implements Serializable {
 
     @Column(unique = true)
     private String recipeName;
-
-    @Column(length = 510)
+//нека да стане 1000 за да е сигурно
+    @Column(length = 1000)
     private String products;
 
     private Integer portions;

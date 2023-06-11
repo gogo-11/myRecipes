@@ -22,7 +22,6 @@
     Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Изход</a>
 </div>
 
-<!-- Header with logo and navigation menu -->
 <header>
     <a href="/welcome">
         <div class="logo">
@@ -44,7 +43,6 @@
     </nav>
 </header>
 
-<!-- Main content section with recipe list -->
 <main>
     <h2 th:text="${recipe.recipeName}"></h2><br>
 
@@ -81,9 +79,6 @@
                 <div style="clear: both; padding-top: 30px;">
                     <strong>Начин на приготвяне:</strong> <br>
                     <span th:text="${recipe.cookingSteps}"></span>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
 
                     <div class="comments">
                         <h4>Коментари</h4>
@@ -96,7 +91,6 @@
                                     <p class="comment-date" th:text="${comment.getFormattedCommentDate()}"></p>
                                 </div>
                                 <p class="comment-text" th:text="${comment.commentText}"></p>
-<!--                                <a th:if="${currentUser}" th:href="@{/view-recipe/__${recipe.id}__/delete-comment/__${comment.commentId}__}">Изтриване на коментар</a>-->
                                 <span sec:authorize="isAuthenticated()"
                                       th:if="${user.id} == ${comment.user.id} or ${user.email} == ${userByRecipe}"
                                       class="deleteButton" style="font-size: 16px;">
@@ -149,7 +143,6 @@
     <hr width="60%" size="3"><br>
 </main>
 
-<!-- Footer with copyright and links -->
 <footer>
     <p>&copy; 2023 MyRecipes. Всички права запазени.</p>
     <nav>
@@ -160,7 +153,6 @@
     </nav>
 </footer>
 
-<!-- Hamburger icon and small menu for mobile devices -->
 <div id="menu-icon" onclick="showMenu()">
     &#9776;
 </div>

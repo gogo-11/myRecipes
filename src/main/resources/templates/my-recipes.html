@@ -22,7 +22,6 @@
   Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Изход</a>
 </div>
 
-<!-- Header with logo and navigation menu -->
 <header>
   <a href="/welcome">
     <div class="logo">
@@ -43,11 +42,11 @@
   </nav>
 </header>
 
-<!-- Main content section with recipe list -->
 <main>
   <h2>Мои рецепти</h2><br>
+  <span th:if="${error}" th:text="${error}" style="color: red;"></span>
   <span th:text="${recipeDeleted}" style="background-color: Aquamarine"></span>
-  <ul class="recipe-list">
+  <ul th:if="${recipes}" class="recipe-list">
     <li th:each="recipe: ${recipes}">
       <img th:if="${recipe.image}" th:src="@{'/recipes/image/{id}'(id=${recipe.id})}"
            alt="Recipe image" width="300px">
@@ -58,17 +57,8 @@
       <a th:href="@{/view-recipe/{id}(id=${recipe.id})}">Виж рецептата</a>
     </li>
   </ul>
-<!--  <div style="font-size: large" class="pagination">-->
-<!--    Общо рецепти [[${totalItems}]] : Страница [[${currentPage}]] от [[${totalPages}]]-->
-<!--    &nbsp; &nbsp; - &nbsp;-->
-<!--    <span th:each="i: ${#numbers.sequence(1, totalPages)}">-->
-<!--            <a th:href="@{'/all-recipes/page/' + ${i}}">[[${i}]]</a>-->
-<!--            &nbsp; &nbsp;-->
-<!--        </span>-->
-<!--  </div>-->
 </main>
 
-<!-- Footer with copyright and links -->
 <footer>
   <p>&copy; 2023 MyRecipes. Всички права запазени.</p>
   <nav>

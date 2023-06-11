@@ -232,7 +232,8 @@ public class UserController {
             }
         session.setAttribute("commentDeleted", null);
 
-        List<String> recipeProducts = new ArrayList<>(Arrays.asList(recipe.getProducts().split("[ ,.]+")));
+//        List<String> recipeProducts = new ArrayList<>(Arrays.asList(recipe.getProducts().split("[ ,.]+")));
+        List<String> recipeProducts = new ArrayList<>(Arrays.asList(recipe.getProducts().split(",")));
         model.addAttribute("recipeProducts", recipeProducts);
 
         if(Boolean.TRUE.equals(recipe.getIsPrivate())){
@@ -424,6 +425,13 @@ public class UserController {
 
         String authentication = securityService.getAuthentication();
         Users user = usersService.getByEmail(authentication);
+
+        try{
+            recipesService.getUsersAllPublicRecipes(user.getId());
+        } catch (RecordNotFoundException e){
+            model.addAttribute("error", "Все още нямате добавени рецепти");
+            return "my-recipes";
+        }
 
         model.addAttribute("recipes", recipesService.getUsersAllPublicRecipes(user.getId()));
         return "my-recipes";
