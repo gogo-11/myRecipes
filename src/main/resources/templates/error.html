@@ -51,7 +51,7 @@
         <img src="/img/web-error.png" class="error-image">
         <p th:text="${error}" style="font-size: 23px"></p>
         <p th:if="${response}"> <strong>Съобщение: </strong><span th:text="${response.getMessage()}"></span></p>
-        <p th:if="${response}"><strong>Подробности за грешката: </strong><span th:text="${response.getDetails()}"></span></p>
+        <p th:if="${response.details}"><strong>Подробности за грешката: </strong><span th:text="${response.getDetails()}"></span></p>
         <p th:if="${response}"><strong>Статус код: </strong><span th:text="${response.getHttpStatus()}"></span></p>
         <p th:unless="${response}" style="font-size: 45px;">404</p>
         <p th:unless="${response}">NOT_FOUND</p>
