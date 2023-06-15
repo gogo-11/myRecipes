@@ -168,9 +168,9 @@ public class MyRestExceptionHandler {
     public String handleExceptionAsString(Exception e, Model model) {
         model.addAttribute("error", "Опа! Нещо се обърка!");
         MyApiErrorResponse response = new MyApiErrorResponse(
-                e.getMessage(),
                 "Неочаквана грешка!",
                 HttpStatus.BAD_REQUEST);
+        System.out.println(e.getMessage());
         model.addAttribute("response", response);
         return "error";
     }

@@ -24,17 +24,17 @@ public class RecipesRepositoryTests {
     @Autowired
     private UsersRepository userRepo;
 
-    @BeforeEach
-    public void setup() {
-        Users user = userRepo.save(new Users(
-                1,
-                "John",
-                "Doe",
-                "example@mail.com",
-                "123456",
-                RolesEn.USER,
-                new ArrayList<>()));
-    }
+//    @BeforeEach
+//    public void setup() {
+//        Users user = userRepo.save(new Users(
+//                1,
+//                "John",
+//                "Doe",
+//                "example@mail.com",
+//                "123456",
+//                RolesEn.USER,
+//                new ArrayList<>()));
+//    }
 
 //    @Test
 //    public void recipeRepositoryTest() {
