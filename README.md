@@ -16,7 +16,7 @@ It's built using Spring Boot, Thymeleaf, Hibernate, and managed with Maven.
 - Maven
 
 ## Installation
-1. Download and install JDK
+1. Download and install JRE
 2. Clone the repository.
 
 ```
