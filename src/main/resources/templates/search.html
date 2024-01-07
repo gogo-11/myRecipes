@@ -59,16 +59,16 @@
 
 
     <form th:action="@{/search}" method="get">
-      <input name="cat" list="cat" placeholder="Избери категория"
-             pattern="MEAT|MEATLESS|DESSERTS|ALAMINUTES|SOUPS|SALADS|DOUGH" style="margin:5px">
-      <datalist id="cat">
-        <option value="MEAT">Месни</option>
-        <option value="MEATLESS">Безмесни</option>
-        <option value="DESSERTS">Десерти</option>
-        <option value="ALAMINUTES">Аламинути</option>
-        <option value="SOUPS">Супи</option>
-        <option value="SALADS">Салати</option>
-        <option value="DOUGH">Тестени</option>
+      <input name="explanation" list="explanation" placeholder="Избери категория"
+             pattern="Месни|Безмесни|Десерти|Аламинути|Супи|Салати|Тестени"  style="margin:5px">
+      <datalist id="explanation">
+        <option value="Месни">Месни</option>
+        <option value="Безмесни">Безмесни</option>
+        <option value="Десерти">Десерти</option>
+        <option value="Аламинути">Аламинути</option>
+        <option value="Супи">Супи</option>
+        <option value="Салати">Салати</option>
+        <option value="Тестени">Тестени</option>
       </datalist>
 
       <input name="submCategory" type="Submit" value="Търси по категория">
@@ -81,9 +81,9 @@
   <ul class="recipe-list" >
     <li th:each="recipe: ${recipesFound}">
       <img th:if="${recipe.image}" th:src="@{'/recipes/image/{id}'(id=${recipe.id})}"
-           alt="Recipe image" width="300px">
+           alt="Recipe image" height="150px">
       <img th:unless="${recipe.image}" src="/img/missing-image.jpg"
-           alt="Recipe image" width="300px">
+           alt="Recipe image" height="150px">
       <h3 th:text="${recipe.recipeName}"></h3>
       <p>Категория: <span th:text="${recipe.category.getExplanation()}"></span></p>
       <a th:href="@{/view-recipe/{id}(id=${recipe.id})}">Виж рецептата</a>

@@ -26,6 +26,10 @@ import com.myrecipe.repository.UsersRepository;
 import com.myrecipe.entities.Categories;
 import com.myrecipe.entities.requests.UsersRequest;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+
 @Service
 public class MyRecipeService implements RecipesService{
     private static final int MAX_WIDTH = 720;
@@ -101,8 +105,12 @@ public class MyRecipeService implements RecipesService{
     }
 
     private byte[] setImageToRecipe (RecipesRequest request) {
-        if (!request.getImage().getContentType().equals("image/jpeg")) {
+        if (!request.getImage().getContentType().equals("image/jpeg")
+                && !request.getImage().getContentType().equals("image/jpg")) {
             throw new ImageFormatException("Невалидно разширение на изображението. Разширението може да бъде само JPEG.");
+        }
+        if(ImageUtils.isImageAboveMaxSizeBytes(request.getImage())) {
+            throw new ImageFormatException("Изображението е прекалено голямо.");
         }
         byte[] imageBytes;
         try {
@@ -278,7 +286,13 @@ public class MyRecipeService implements RecipesService{
             if(request.getRecipeName().isBlank() || request.getRecipeName() == null){
                 recipe.get().setRecipeName(recipesRepository.getReferenceById(id).getRecipeName());
             } else {
-                recipe.get().setRecipeName(request.getRecipeName());
+                if (isRecipeNameChanged(id, request.getRecipeName())) {
+                    if (recipesRepository.findByName(request.getRecipeName()) == null) {
+                        recipe.get().setRecipeName(request.getRecipeName());
+                    } else
+                        throw new DuplicateRecordFoundException("A recipe with this name already exists.");
+                } else
+                    recipe.get().setRecipeName(request.getRecipeName());
             }
 
             if(request.getPortions().toString().isBlank() || request.getPortions() == null){
@@ -325,5 +339,10 @@ public class MyRecipeService implements RecipesService{
         } else {
             throw new RecordNotFoundException("User with the specified ID not found");
         }
+    }
+
+    private boolean isRecipeNameChanged(Integer recipeId, String recipeName) {
+        Recipes recipe = recipesRepository.getReferenceById(recipeId);
+        return !recipe.getRecipeName().equals(recipeName);
     }
 }
