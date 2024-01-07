@@ -10,6 +10,7 @@ import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.web.multipart.MultipartFile;
 
 public class ImageUtils {
+    private static final long MAX_IMAGE_SIZE = 2 * 1024 * 1024L;
     private ImageUtils(){}
     public static byte[] resizeImage(MultipartFile file, int maxWidth, int maxHeight) throws IOException {
         BufferedImage originalImage = ImageIO.read(file.getInputStream());
@@ -48,5 +49,9 @@ public class ImageUtils {
         int originalHeight = originalImage.getHeight();
 
         return originalWidth >= minWidth && originalHeight >= minHeight;
+    }
+
+    public static boolean isImageAboveMaxSizeBytes (MultipartFile image){
+        return image.getSize() > MAX_IMAGE_SIZE;
     }
 }

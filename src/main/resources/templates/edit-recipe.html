@@ -81,6 +81,8 @@
       <input type="radio" name="isPrivate" value="true">Да
       <br><br>
 
+      <label for="image">Изображението трябва да е с разширение .jpg/.jpeg, не по-голямо от 2MB и
+        минимално съотношение на страните 700х400 (в пиксели)</label><br>
       <input id="image" type="file" name="image" th:field="*{image}" accept=".jpg, .jpeg">
       <br><span th:text="${errorMessage}" style="color: red;"></span>
       <span th:errors="*{recipeName}" style="color: red;"></span>

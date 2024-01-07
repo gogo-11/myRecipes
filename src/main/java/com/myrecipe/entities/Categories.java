@@ -37,6 +37,26 @@ public enum Categories {
         return result;
     }
 
+    public static boolean categoryExistsByExplanation(String explanation) {
+        boolean result = false;
+        for (Categories category : values()) {
+            if (category.getExplanation().equalsIgnoreCase(explanation)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    public static Categories getByExplanation(String explanation) {
+        for (Categories category : values()) {
+            if (category.getExplanation().equalsIgnoreCase(explanation)) {
+                return category;
+            }
+        }
+        return null;
+    }
+
     public String getExplanation() {
         return explanation;
     }

@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import com.myrecipe.service.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.authentication.DisabledException;
@@ -42,6 +43,7 @@ import com.myrecipe.exceptions.DuplicateRecordFoundException;
 import com.myrecipe.exceptions.ImageFormatException;
 import com.myrecipe.exceptions.InvalidUserRequestException;
 import com.myrecipe.exceptions.RecordNotFoundException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @Controller
 public class UserController {
@@ -454,8 +456,8 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public String showSearchPage (Model model, String keyword, Categories cat) {
-        if(keyword != null || cat != null) {
+    public String showSearchPage (Model model, String keyword, String explanation) {
+        if(keyword != null || explanation != null) {
             if(keyword != null) {
                 List<Recipes> recipesFound = recipesService.getByKeyword(keyword);
                 if(!recipesFound.isEmpty()){
@@ -465,7 +467,12 @@ public class UserController {
                 }
             } else {
                 RecipesRequest request = new RecipesRequest();
-                request.setCategory(cat);
+                if(Categories.categoryExistsByExplanation(explanation))
+                    request.setCategory(Categories.getByExplanation(explanation));
+                else {
+                    model.addAttribute("errorCat", "Несъществуваща категория!");
+                    return "search";
+                }
                 List<Recipes> recipesFound;
                 try{
                     recipesFound = recipesService.getByCategory(request);
@@ -739,12 +746,23 @@ public class UserController {
         if(request.getCategory().toString().isEmpty() || request.getPortions().toString().isBlank() || request.getRecipeName().isBlank() ||
                 request.getProducts().isBlank() || request.getCookingSteps().isBlank() || request.getCookingTime().toString().isBlank()) {
             model.addAttribute("errorMessage", "Попълнете всички полета!");
-            return "add-recipe";
+            return "edit-recipe";
         }
 
         request.setUserId(user.getId());
 
-        recipesService.recipeUpdate(id, request);
+        try {
+            recipesService.recipeUpdate(id, request);
+        } catch (DuplicateRecordFoundException e) {
+            model.addAttribute("errorMessage", "Вече има рецепта със същото име");
+            return "edit-recipe";
+        } catch (InvalidUserRequestException e) {
+            model.addAttribute("errorMessage", "Попълнете правилно всички полета");
+            return "edit-recipe";
+        } catch (ImageFormatException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "edit-recipe";
+        }
 
         return "redirect:/view-recipe/"+id;
     }
