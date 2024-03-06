@@ -34,16 +34,10 @@ public class MailConfig {
         properties.put("mail.smtp.auth", true);
         properties.put("mail.smtp.starttls.enable", true);
         properties.put("mail.smtp.starttls.required", true);
-//        properties.put("mail.smtp.ssl.enable", true);
-//        properties.put("spring.mail.host", "smtp.abv.bg");
-//        properties.put("spring.mail.port", 465);
-//        properties.put("spring.mail.username", "my-recipes@abv.bg");
-//        properties.put("spring.mail.password", "myrecipes123");
-        properties.put("spring.mail.host", "smtp.gmail.com");
-        properties.put("spring.mail.port", 587);
-        properties.put("spring.mail.username", "goshanski.n@gmail.com");
-        properties.put("spring.mail.password", "zuvwkyhjyoqydace");
-
+        properties.put("spring.mail.host", host);
+        properties.put("spring.mail.port", port);
+        properties.put("spring.mail.username", username);
+        properties.put("spring.mail.password", password);
 
         return mailSender;
     }
