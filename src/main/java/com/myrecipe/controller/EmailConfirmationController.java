@@ -11,7 +11,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import com.myrecipe.entities.EmailConfirmationToken;
-import com.myrecipe.entities.RolesEn;
 import com.myrecipe.entities.Users;
 import com.myrecipe.entities.requests.EmailConfirmationTokenRequest;
 import com.myrecipe.entities.requests.UsersRequest;
@@ -23,6 +22,7 @@ import com.myrecipe.service.UsersService;
 
 @Controller
 public class EmailConfirmationController {
+    public static final String LOGIN_FORM_PAGE = "login_form";
     @Autowired
     private SecurityService securityService;
     @Autowired
@@ -35,6 +35,10 @@ public class EmailConfirmationController {
     private JavaMailSender javaMailSender;
     @Value("${app.base-url}")
     private String appBaseUrl;
+    @Value("${spring.mail.username}")
+    private String username;
+    private static final String ERROR_ATTRIBUTE_NAME = "error";
+
 
     @PostMapping("/send-confirmation-email")
     public String sendConfirmationEmail (@ModelAttribute UsersRequest request, Model model) {
@@ -49,7 +53,7 @@ public class EmailConfirmationController {
         try {
             userByEmail = usersService.getByEmail(request.getEmail());
         } catch (RecordNotFoundException e) {
-            model.addAttribute("error", "Няма открит акаунт, асоцииран с този имейл!");
+            model.addAttribute(ERROR_ATTRIBUTE_NAME, "Няма открит акаунт, асоцииран с този имейл!");
             return "registration";
         }
 
@@ -76,7 +80,7 @@ public class EmailConfirmationController {
 
         model.addAttribute("emailSent", "Изпратен Ви бе имейл за потвърждениe. Проверете входящата си поща!");
 
-        return "login_form";
+        return LOGIN_FORM_PAGE;
     }
 
     @RequestMapping(value = "/confirm-email/{token}", method = { RequestMethod.GET, RequestMethod.POST })
@@ -89,16 +93,16 @@ public class EmailConfirmationController {
         try {
             emailToken = emailService.getByToken(token);
         } catch (RecordNotFoundException e) {
-            model.addAttribute("error", "Невалиден токен!");
-            return "login_form";
+            model.addAttribute(ERROR_ATTRIBUTE_NAME, "Невалиден токен!");
+            return LOGIN_FORM_PAGE;
         }
 
         Users userByToken;
         try {
             userByToken = usersService.getById(emailToken.getUser().getId());
         } catch (RecordNotFoundException e) {
-            model.addAttribute("error", "Няма открит акаунт, асоцииран с този имейл!");
-            return "login_form";
+            model.addAttribute(ERROR_ATTRIBUTE_NAME, "Няма открит акаунт, асоцииран с този имейл!");
+            return LOGIN_FORM_PAGE;
         }
 
         UsersRequest userRequest = new UsersRequest();
@@ -108,23 +112,16 @@ public class EmailConfirmationController {
         usersService.userUpdate(userByToken.getId(), userRequest);
         model.addAttribute("success", "Потвърдихте имейл адреса си успешно!");
 
-        return "login_form";
+        return LOGIN_FORM_PAGE;
     }
 
     private void sendEmailConfirmationLink(String email, String emailConfirmationLink) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("goshanski.n@gmail.com");
+        message.setFrom(username);
         message.setTo(email);
         message.setSubject("Потвърждение на имейл");
         message.setText("За да потвърдите имейла си, моля последвайте следния линк:\n\n" + emailConfirmationLink);
 
         javaMailSender.send(message);
-    }
-
-    private boolean isUser() {
-        if(securityService.isAuthenticated()){
-            return usersService.getByEmail(securityService.getAuthentication()).getRole().equals(RolesEn.USER);
-        } else
-            return  false;
     }
 }
