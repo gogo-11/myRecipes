@@ -19,7 +19,7 @@
     <form id="logoutForm" method="POST" th:action="@{/logout}">
         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
     </form>
-    Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Изход</a>
+    Добре дошли, <span sec:authentication="principal.firstName"></span> | <a onclick="document.forms['logoutForm'].submit()">Изход</a>
 </div>
 
 <header>
@@ -60,7 +60,7 @@
             <input name="email" type="email" th:field="*{email}" required placeholder="example@mail.com">
             <br>
 
-            <input id="pass" name="password" type="password" th:field="*{password}" required placeholder="Парола">
+            <input id="pass" name="password" type="password" th:field="*{password}" required placeholder="Парола" oninput="matchPassword()">
             <br>
             <input type="checkbox" onclick="showPassword()" id="passShow"> <label for="passShow" style="font-size: 14px">покажи паролата</label>
             <br>
@@ -72,7 +72,8 @@
             <span th:text="${errEmail}" style="color: red;"></span>
             <span th:text="${errPass}" style="color: red;"></span>
             <span th:text="${error}" style="color: red;"></span>
-            <span id="Message" style="color: red;"></span>
+            <span id="Message2" style="color: tomato;"></span>
+            <span id="Message" style="color: tomato;"></span>
             <br>
 
             <input id="subm" type="Submit" value="Регистрация" disabled> <br><br>
@@ -87,7 +88,7 @@
 </main>
 
 <footer>
-    <p>&copy; 2023 MyRecipes. Всички права запазени.</p>
+    <p>&copy;<span id="currentYear"></span> MyRecipes. Всички права запазени.</p>
     <nav>
         <ul>
             <li><a href="/terms-of-service#privacy-policy">Privacy Policy</a></li>
@@ -100,7 +101,7 @@
     &#9776;
 </div>
 <ul id="small-menu">
-    <li sec:authorize="isAuthenticated()" style="padding-top: 5px;">Добре дошли, <span sec:authentication="name"></span></li>
+    <li sec:authorize="isAuthenticated()" style="padding-top: 5px;">Добре дошли, <span sec:authentication="principal.firstName"></span></li>
     <hr>
     <li><a href="/welcome"> <img src="/img/home-green.png" width="20"></a></li>
     <hr>
@@ -130,5 +131,6 @@
 </ul>
 
 <script src="/js/app.js"></script>
+<script src="/js/currentYear.js"></script>
 </body>
 </html>
