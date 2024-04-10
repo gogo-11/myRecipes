@@ -19,7 +19,7 @@
     <form id="logoutForm" method="POST" th:action="@{/logout}">
         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
     </form>
-    Добре дошли, <span sec:authentication="name"></span> | <a onclick="document.forms['logoutForm'].submit()">Изход</a>
+    Добре дошли, <span sec:authentication="principal.firstName"></span> | <a onclick="document.forms['logoutForm'].submit()">Изход</a>
 </div>
 
 <header>
@@ -50,9 +50,9 @@
     <div class="content">
                 <div style="float:left" >
                     <img th:if="${recipe.image}" th:src="@{'/recipes/image/{id}'(id=${recipe.id})}"
-                         alt="Recipe image" width="90%"></a>
+                         alt="Recipe image" width="90%">
                     <img th:unless="${recipe.image}" src="/img/missing-image.jpg"
-                         alt="Recipe image" width="40%"></a>
+                         alt="Recipe image" width="40%">
                 </div>
 
                 <div class="leftSpl">
@@ -146,7 +146,7 @@
 </main>
 
 <footer>
-    <p>&copy; 2023 MyRecipes. Всички права запазени.</p>
+    <p>&copy;<span id="currentYear"></span> MyRecipes. Всички права запазени.</p>
     <nav>
         <ul>
             <li><a href="/terms-of-service#privacy-policy">Privacy Policy</a></li>
@@ -159,7 +159,7 @@
     &#9776;
 </div>
 <ul id="small-menu">
-    <li sec:authorize="isAuthenticated()" style="padding-top: 5px;">Добре дошли, <span sec:authentication="name"></span></li>
+    <li sec:authorize="isAuthenticated()" style="padding-top: 5px;">Добре дошли, <span sec:authentication="principal.firstName"></span></li>
     <hr>
     <li><a href="/welcome"> <img src="/img/home-green.png" width="20"></a></li>
     <hr>
@@ -187,5 +187,6 @@
 </ul>
 
 <script src="/js/app.js"></script>
+<script src="/js/currentYear.js"></script>
 </body>
 </html>

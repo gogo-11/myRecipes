@@ -23,6 +23,14 @@ function showMenu() {
       var pw2 = document.getElementById("cPass").value;
       console.log(pw1);
       console.log(pw2);
+
+      if (pw1.length < 6 && pw1 !== ""){
+        document.getElementById("subm").disabled=true;
+        document.getElementById("Message2").innerHTML = "Паролата трябва да е поне 6 символа!";
+      } else {
+        document.getElementById("Message2").innerHTML = "";
+      }
+
       if(pw1 == pw2)
       {
         //document.getElementById("submitPassword").disabled = false;
