@@ -32,8 +32,8 @@ import javax.validation.constraints.Pattern;
 
 @Service
 public class MyRecipeService implements RecipesService{
-    private static final int MAX_WIDTH = 720;
-    private static final int MAX_HEIGHT = 405;
+    private static final int MAX_WIDTH = 1280;
+    private static final int MAX_HEIGHT = 720;
     private static final int MIN_WIDTH = 700;
     private static final int MIN_HEIGHT = 400;
     @Autowired

@@ -15,22 +15,8 @@ public class ImageUtils {
     public static byte[] resizeImage(MultipartFile file, int maxWidth, int maxHeight) throws IOException {
         BufferedImage originalImage = ImageIO.read(file.getInputStream());
 
-        int originalWidth = originalImage.getWidth();
-        int originalHeight = originalImage.getHeight();
-
-        int newWidth = originalWidth;
-        int newHeight = originalHeight;
-        if (originalWidth > maxWidth) {
-            newWidth = maxWidth;
-            newHeight = (newWidth * originalHeight) / originalWidth;
-        }
-        if (newHeight > maxHeight) {
-            newHeight = maxHeight;
-            newWidth = (newHeight * newWidth) / originalHeight;
-        }
-
         BufferedImage resizedImage = Thumbnails.of(originalImage)
-                .size(newWidth, newHeight)
+                .size(maxWidth, maxHeight)
                 .asBufferedImage();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
