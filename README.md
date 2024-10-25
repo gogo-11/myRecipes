@@ -78,4 +78,5 @@ java -jar target/myRecipes-0.0.1-SNAPSHOT.jar
 ```
 Please replace the `target/myRecipes-0.0.1-SNAPSHOT.jar` with the actual path 
 and file title of the JAR you need to run in Windows.
+
 3. Open a web browser and access the application at [http://localhost:8081](http://localhost:8081).
