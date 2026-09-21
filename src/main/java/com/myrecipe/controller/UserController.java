@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.myrecipe.entities.requests.RecipesRequest;
 import com.myrecipe.entities.requests.UsersRequest;
 import com.myrecipe.security.SecurityService;
+import com.myrecipe.service.NutritionService;
 import com.myrecipe.service.RecipesService;
 import com.myrecipe.service.UsersService;
 import com.myrecipe.service.CommentsService;
@@ -58,6 +59,8 @@ public class UserController {
     private CommentsService commentsService;
     @Autowired
     private SecurityService securityService;
+    @Autowired
+    private NutritionService nutritionService;
     @Autowired
     private PasswordEncoder encoder;
 
@@ -261,6 +264,7 @@ public class UserController {
         }
         model.addAttribute("recipe", recipe);
         model.addAttribute("request", new CommentsRequest());
+        model.addAttribute("nutritionEstimate", nutritionService.getEstimateForRecipe(recipe));
 
         if(securityService.isAuthenticated()){
             String authentication = securityService.getAuthentication();
@@ -547,6 +551,7 @@ public class UserController {
             return "delete-recipe";
         }
         try{
+            nutritionService.deleteEstimateForRecipe(id);
             recipesService.deleteRecipe(id);
         } catch (RecordNotFoundException e) {
             model.addAttribute("error", "Не е открита рецепта с посоченият ID номер!");
@@ -753,6 +758,7 @@ public class UserController {
 
         try {
             recipesService.recipeUpdate(id, request);
+            nutritionService.deleteEstimateForRecipe(id);
         } catch (DuplicateRecordFoundException e) {
             model.addAttribute("errorMessage", "Вече има рецепта със същото име");
             return "edit-recipe";
