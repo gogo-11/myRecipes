@@ -9,10 +9,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    fetch('/recipes/' + recipeId + '/nutrition')
+    fetch('/api/v1/recipes/' + recipeId + '/nutrition')
         .then(function (response) {
             if (response.status === 204) {
-                return null;
+                return generateNutrition(recipeId);
             }
             if (!response.ok) {
                 throw new Error('Nutrition request failed');
@@ -43,4 +43,15 @@ function setText(elementId, value) {
     }
 
     element.textContent = value;
+}
+
+function generateNutrition(recipeId) {
+    return fetch('/api/v1/recipes/' + recipeId + '/nutrition', {
+        method: 'POST'
+    }).then(function (response) {
+        if (!response.ok) {
+            throw new Error('Nutrition generation failed');
+        }
+        return response.json();
+    });
 }
