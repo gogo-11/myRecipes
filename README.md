@@ -66,6 +66,13 @@ spring.mail.password=password
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
 spring.mail.properties.mail.smtp.starttls.required=true
+admin.password = your admin pass here
+
+# Gemini AI nutrition estimates 
+gemini.api-key=Enter your API key here
+gemini.model=${GEMINI_MODEL:gemini-3.5-flash}
+gemini.fallback-model=${GEMINI_FALLBACK_MODEL:gemini-3.5-flash-lite}
+gemini.base-url=https://generativelanguage.googleapis.com/v1beta
 ```
 ## Usage
 1. Ensure your MySQL server is running, and the database your_app_db_name exists. If it doesn't exist, you can create it in MySQL Workbench or using the command line:
