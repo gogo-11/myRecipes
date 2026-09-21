@@ -264,7 +264,6 @@ public class UserController {
         }
         model.addAttribute("recipe", recipe);
         model.addAttribute("request", new CommentsRequest());
-        model.addAttribute("nutritionEstimate", nutritionService.getEstimateForRecipe(recipe));
 
         if(securityService.isAuthenticated()){
             String authentication = securityService.getAuthentication();

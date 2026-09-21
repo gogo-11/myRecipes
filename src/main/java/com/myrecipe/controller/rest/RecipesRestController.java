@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.myrecipe.entities.requests.RecipesRequest;
+import com.myrecipe.entities.responses.NutritionEstimateResponse;
 import com.myrecipe.entities.responses.RecipesResponse;
 import com.myrecipe.service.NutritionService;
 import com.myrecipe.service.RecipesService;
@@ -40,6 +41,17 @@ public class RecipesRestController {
     public ResponseEntity<Recipes> getRecipeById (@PathVariable("id") Integer id) {
         Recipes recipe = recipesService.getById(id);
         return new ResponseEntity<>(recipe, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/nutrition")
+    public ResponseEntity<NutritionEstimateResponse> getRecipeNutrition(@PathVariable("id") Integer id) {
+        Recipes recipe = recipesService.getById(id);
+        NutritionEstimateResponse nutritionEstimate = nutritionService.getEstimateForRecipe(recipe);
+        if (nutritionEstimate == null) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity<>(nutritionEstimate, HttpStatus.OK);
     }
 
     /**
