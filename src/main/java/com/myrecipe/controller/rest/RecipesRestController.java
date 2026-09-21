@@ -43,17 +43,6 @@ public class RecipesRestController {
         return new ResponseEntity<>(recipe, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}/nutrition")
-    public ResponseEntity<NutritionEstimateResponse> getRecipeNutrition(@PathVariable("id") Integer id) {
-        Recipes recipe = recipesService.getById(id);
-        NutritionEstimateResponse nutritionEstimate = nutritionService.getEstimateForRecipe(recipe);
-        if (nutritionEstimate == null) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-
-        return new ResponseEntity<>(nutritionEstimate, HttpStatus.OK);
-    }
-
     /**
      *
      * @return all the recipes

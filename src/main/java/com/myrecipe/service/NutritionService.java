@@ -7,7 +7,9 @@ import com.myrecipe.entities.responses.NutritionEstimateResponse;
 
 @Component
 public interface NutritionService {
-    NutritionEstimateResponse getEstimateForRecipe(Recipes recipe);
+    NutritionEstimateResponse getCachedEstimateForRecipe(Recipes recipe);
+
+    NutritionEstimateResponse generateEstimateForRecipe(Recipes recipe);
 
     void deleteEstimateForRecipe(Integer recipeId);
 }

@@ -22,7 +22,7 @@ public class MyNutritionService implements NutritionService {
 
     @Override
     @Transactional
-    public NutritionEstimateResponse getEstimateForRecipe(Recipes recipe) {
+    public NutritionEstimateResponse getCachedEstimateForRecipe(Recipes recipe) {
         if (recipe == null || recipe.getId() == null) {
             return null;
         }
@@ -35,8 +35,24 @@ public class MyNutritionService implements NutritionService {
             return cachedEstimate;
         }
 
+        System.out.println("Nutrition estimate cache miss for recipe id " + recipe.getId());
+        return null;
+    }
+
+    @Override
+    @Transactional
+    public NutritionEstimateResponse generateEstimateForRecipe(Recipes recipe) {
+        if (recipe == null || recipe.getId() == null) {
+            return null;
+        }
+
+        NutritionEstimateResponse cachedEstimate = getCachedEstimateForRecipe(recipe);
+        if (cachedEstimate != null) {
+            return cachedEstimate;
+        }
+
         try {
-            System.out.println("Nutrition estimate cache miss for recipe id " + recipe.getId() + ". Calling AI service.");
+            System.out.println("Calling AI service for recipe id " + recipe.getId());
             NutritionEstimateResponse estimate = nutritionAiClient.estimate(toRequest(recipe));
             saveEstimate(recipe, estimate);
             System.out.println("Nutrition estimate saved for recipe id " + recipe.getId());
@@ -62,7 +78,7 @@ public class MyNutritionService implements NutritionService {
                 estimate.getProteinGrams(),
                 estimate.getCarbohydratesGrams(),
                 estimate.getFatGrams(),
-                null,
+                estimate.getNotes(),
                 estimate.getEstimatedAt());
     }
 
@@ -82,6 +98,7 @@ public class MyNutritionService implements NutritionService {
         estimate.setCarbohydratesGrams(response.getCarbohydratesGrams());
         estimate.setFatGrams(response.getFatGrams());
         estimate.setModel(nutritionAiClient.getModelName());
+        estimate.setNotes(response.getNotes());
         estimate.setEstimatedAt(response.getEstimatedAt());
         nutritionRepository.save(estimate);
     }

@@ -50,6 +50,9 @@ public class RecipeNutritionEstimate implements Serializable {
     @Column(name = "ai_model")
     private String model;
 
+    @Column(name = "notes")
+    private String notes;
+
     @Column(name = "estimated_at", nullable = false)
     private LocalDateTime estimatedAt;
 }
