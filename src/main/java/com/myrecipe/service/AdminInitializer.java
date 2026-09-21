@@ -4,6 +4,7 @@ import com.myrecipe.entities.RolesEn;
 import com.myrecipe.entities.Users;
 import com.myrecipe.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,9 @@ import javax.annotation.PostConstruct;
 public class AdminInitializer {
     private UsersRepository repository;
     private PasswordEncoder encoder;
+
+    @Value("${admin.password}")
+    private String adminPass;
 
     @Autowired
     public AdminInitializer(UsersRepository repository, PasswordEncoder encoder) {
@@ -34,7 +38,7 @@ public class AdminInitializer {
         admin.setFirstName("Администратор");
         admin.setLastName("Първи");
         admin.setEmail("admin@my-recipes.com");
-        admin.setPassword(encoder.encode("adminpass"));
+        admin.setPassword(encoder.encode(adminPass));
 
         repository.save(admin);
     }

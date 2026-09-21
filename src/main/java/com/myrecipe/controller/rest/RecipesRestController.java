@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.myrecipe.entities.requests.RecipesRequest;
 import com.myrecipe.entities.responses.RecipesResponse;
+import com.myrecipe.service.NutritionService;
 import com.myrecipe.service.RecipesService;
 import com.myrecipe.entities.Recipes;
 import com.myrecipe.entities.requests.UsersRequest;
@@ -26,6 +27,9 @@ public class RecipesRestController {
 
     @Autowired
     RecipesService recipesService;
+
+    @Autowired
+    NutritionService nutritionService;
 
     /**
      *
@@ -86,6 +90,7 @@ public class RecipesRestController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteRecipe (@PathVariable("id") Integer recipeId) {
+        nutritionService.deleteEstimateForRecipe(recipeId);
         recipesService.deleteRecipe(recipeId);
         return new ResponseEntity<>("Recipe deleted successfully", HttpStatus.OK);
     }

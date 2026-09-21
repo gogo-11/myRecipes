@@ -69,6 +69,16 @@
                     <br><br>
                     <strong>Категория:</strong>
                     <span th:text="${recipe.category.getExplanation()}"></span>
+                    <div th:if="${nutritionEstimate}" class="nutrition-estimate" style="margin-top: 20px;">
+                        <strong>Хранителни стойности (за порция):</strong>
+                        <ul style="text-align: left;">
+                            <li>Калории: <span th:text="${nutritionEstimate.calories}"></span> kcal</li>
+                            <li>Протеин: <span th:text="${nutritionEstimate.proteinGrams}"></span> g</li>
+                            <li>Въглехидрати: <span th:text="${nutritionEstimate.carbohydratesGrams}"></span> g</li>
+                            <li>Мазнини: <span th:text="${nutritionEstimate.fatGrams}"></span> g</li>
+                        </ul>
+                        <span th:if="${nutritionEstimate.notes}" th:text="${nutritionEstimate.notes}" style="font-size: 13px; font-style: italic;"></span>
+                    </div>
                     <br>
                     <span sec:authorize="hasRole('ROLE_USER')" th:if="${user.email} == ${userByRecipe}"><a th:href="@{/edit-recipe/__${recipe.id}__}">Редактирай</a></span>
                     <span sec:authorize="isAuthenticated()"
