@@ -15,6 +15,13 @@ import com.myrecipe.entities.Recipes;
 public interface RecipesRepository extends JpaRepository<Recipes, Integer> {
     @Query(value = "SELECT * FROM recipes WHERE is_private = false", nativeQuery = true)
     Page<Recipes> findAllPublicRecipes(Pageable pageable);
+
+    @Query(
+            value = "SELECT * FROM recipes WHERE is_private = false ORDER BY recipe_id DESC",
+            countQuery = "SELECT COUNT(*) FROM recipes WHERE is_private = false",
+            nativeQuery = true)
+    Page<Recipes> findAllPublicRecipesOrderByIdDesc(Pageable pageable);
+
     @Query(value = "SELECT * FROM recipes WHERE is_private = false", nativeQuery = true)
     List<Recipes> findAllPublicRecipes();
 

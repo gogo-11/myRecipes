@@ -1,8 +1,9 @@
 package com.myrecipe.controller.rest;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,26 +12,62 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.myrecipe.entities.requests.RecipesRequest;
-import com.myrecipe.entities.responses.NutritionEstimateResponse;
-import com.myrecipe.entities.responses.RecipesResponse;
-import com.myrecipe.service.NutritionService;
-import com.myrecipe.service.RecipesService;
 import com.myrecipe.entities.Recipes;
+import com.myrecipe.entities.requests.RecipesRequest;
 import com.myrecipe.entities.requests.UsersRequest;
+import com.myrecipe.entities.responses.RecipePageResponse;
+import com.myrecipe.entities.responses.RecipeSummaryResponse;
+import com.myrecipe.entities.responses.RecipesResponse;
+import com.myrecipe.exceptions.InvalidUserRequestException;
+import com.myrecipe.service.NutritionService;
+import com.myrecipe.service.RecipeMapper;
+import com.myrecipe.service.RecipesService;
 
 
 @RestController
-@RequestMapping("/recipes")
+@RequestMapping("/api/v1/recipes")
 public class RecipesRestController {
+    private static final int DEFAULT_PAGE = 0;
+    private static final int DEFAULT_SIZE = 6;
+    private static final int MAX_SIZE = 50;
 
-    @Autowired
-    RecipesService recipesService;
+    private final RecipesService recipesService;
+    private final NutritionService nutritionService;
+    private final RecipeMapper recipeMapper;
 
-    @Autowired
-    NutritionService nutritionService;
+    public RecipesRestController(RecipesService recipesService,
+                                 NutritionService nutritionService,
+                                 RecipeMapper recipeMapper) {
+        this.recipesService = recipesService;
+        this.nutritionService = nutritionService;
+        this.recipeMapper = recipeMapper;
+    }
+
+    @GetMapping
+    public ResponseEntity<RecipePageResponse> getPublicRecipes(
+            @RequestParam(name = "page", defaultValue = "" + DEFAULT_PAGE) Integer page,
+            @RequestParam(name = "size", defaultValue = "" + DEFAULT_SIZE) Integer size) {
+        validatePagination(page, size);
+
+        Page<Recipes> recipesPage = recipesService.getPublicRecipesPage(page, size);
+        List<RecipeSummaryResponse> content = recipesPage.getContent().stream()
+                .map(recipeMapper::toSummaryResponse)
+                .collect(Collectors.toList());
+
+        RecipePageResponse response = new RecipePageResponse(
+                content,
+                recipesPage.getNumber(),
+                recipesPage.getSize(),
+                recipesPage.getTotalElements(),
+                recipesPage.getTotalPages(),
+                recipesPage.isFirst(),
+                recipesPage.isLast());
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
     /**
      *
@@ -94,5 +131,17 @@ public class RecipesRestController {
         nutritionService.deleteEstimateForRecipe(recipeId);
         recipesService.deleteRecipe(recipeId);
         return new ResponseEntity<>("Recipe deleted successfully", HttpStatus.OK);
+    }
+
+    private void validatePagination(Integer page, Integer size) {
+        if (page == null || page < 0) {
+            throw new InvalidUserRequestException("Page must be greater than or equal to 0");
+        }
+        if (size == null || size < 1) {
+            throw new InvalidUserRequestException("Size must be greater than or equal to 1");
+        }
+        if (size > MAX_SIZE) {
+            throw new InvalidUserRequestException("Size must be less than or equal to " + MAX_SIZE);
+        }
     }
 }
