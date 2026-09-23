@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.myrecipe.entities.Recipes;
 import com.myrecipe.entities.requests.RecipesRequest;
 import com.myrecipe.entities.requests.UsersRequest;
+import com.myrecipe.entities.responses.RecipeDetailsResponse;
 import com.myrecipe.entities.responses.RecipePageResponse;
 import com.myrecipe.entities.responses.RecipeSummaryResponse;
 import com.myrecipe.entities.responses.RecipesResponse;
@@ -75,9 +76,9 @@ public class RecipesRestController {
      * @return the recipe wanted and HTTP status code for successful operation
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Recipes> getRecipeById (@PathVariable("id") Integer id) {
-        Recipes recipe = recipesService.getById(id);
-        return new ResponseEntity<>(recipe, HttpStatus.OK);
+    public ResponseEntity<RecipeDetailsResponse> getRecipeById (@PathVariable("id") Integer id) {
+        Recipes recipe = recipesService.getPublicRecipeById(id);
+        return new ResponseEntity<>(recipeMapper.toDetailsResponse(recipe), HttpStatus.OK);
     }
 
     /**

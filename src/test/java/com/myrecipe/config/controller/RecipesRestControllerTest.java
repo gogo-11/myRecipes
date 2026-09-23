@@ -3,6 +3,7 @@ package com.myrecipe.config.controller;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -15,7 +16,11 @@ import java.util.Collections;
 import com.myrecipe.controller.rest.RecipesRestController;
 import com.myrecipe.entities.Categories;
 import com.myrecipe.entities.Recipes;
+import com.myrecipe.entities.Users;
+import com.myrecipe.entities.responses.AuthorSummaryResponse;
+import com.myrecipe.entities.responses.RecipeDetailsResponse;
 import com.myrecipe.entities.responses.RecipeSummaryResponse;
+import com.myrecipe.exceptions.RecordNotFoundException;
 import com.myrecipe.service.NutritionService;
 import com.myrecipe.service.RecipeMapper;
 import com.myrecipe.service.RecipesService;
@@ -64,7 +69,7 @@ public class RecipesRestControllerTest {
                 .andExpect(jsonPath("$.content", hasSize(2)))
                 .andExpect(jsonPath("$.content[0].id").value(3))
                 .andExpect(jsonPath("$.content[0].recipeName").value("Трета рецепта"))
-                .andExpect(jsonPath("$.content[0].imageUrl").value("/recipes/image/3"))
+                .andExpect(jsonPath("$.content[0].imageUrl").value("/api/v1/recipes/3/image"))
                 .andExpect(jsonPath("$.page").value(0))
                 .andExpect(jsonPath("$.size").value(6))
                 .andExpect(jsonPath("$.totalElements").value(2))
@@ -139,6 +144,63 @@ public class RecipesRestControllerTest {
         verify(recipesService).getPublicRecipesPage(eq(1), eq(1));
     }
 
+    @Test
+    public void getPublicRecipeDetailsReturnsDetailsDto() throws Exception {
+        Recipes recipe = recipe(12, "Детайлна рецепта", false);
+        recipe.setProducts("яйца\nсирене");
+        recipe.setCookingSteps("Разбий\nИзпечи");
+        Users author = author(5, "Иван", "Петров");
+        recipe.setUser(author);
+
+        when(recipesService.getPublicRecipeById(12)).thenReturn(recipe);
+        when(recipeMapper.toDetailsResponse(recipe)).thenReturn(details(recipe));
+
+        mockMvc.perform(get("/api/v1/recipes/12"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(12))
+                .andExpect(jsonPath("$.recipeName").value("Детайлна рецепта"))
+                .andExpect(jsonPath("$.products").value("яйца\nсирене"))
+                .andExpect(jsonPath("$.cookingSteps").value("Разбий\nИзпечи"))
+                .andExpect(jsonPath("$.imageUrl").value("/api/v1/recipes/12/image"))
+                .andExpect(jsonPath("$.author.id").value(5))
+                .andExpect(jsonPath("$.author.firstName").value("Иван"))
+                .andExpect(jsonPath("$.author.lastName").value("Петров"))
+                .andExpect(jsonPath("$.image").doesNotExist())
+                .andExpect(jsonPath("$.user").doesNotExist())
+                .andExpect(jsonPath("$.comments").doesNotExist())
+                .andExpect(jsonPath("$.password").doesNotExist())
+                .andExpect(jsonPath("$.emailConfirmationToken").doesNotExist())
+                .andExpect(jsonPath("$.passwordResetToken").doesNotExist());
+
+        verify(recipesService).getPublicRecipeById(12);
+    }
+
+    @Test
+    public void getPublicRecipeDetailsReturnsNotFoundForMissingRecipe() throws Exception {
+        when(recipesService.getPublicRecipeById(404))
+                .thenThrow(new RecordNotFoundException("Recipe with the specified ID does not exist!"));
+
+        mockMvc.perform(get("/api/v1/recipes/404"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Record was not found"))
+                .andExpect(jsonPath("$.details").value("Recipe with the specified ID does not exist!"));
+
+        verifyNoInteractions(recipeMapper);
+    }
+
+    @Test
+    public void getPublicRecipeDetailsReturnsNotFoundForPrivateRecipe() throws Exception {
+        when(recipesService.getPublicRecipeById(15))
+                .thenThrow(new RecordNotFoundException("Recipe with the specified ID does not exist!"));
+
+        mockMvc.perform(get("/api/v1/recipes/15"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Record was not found"))
+                .andExpect(jsonPath("$.details").value("Recipe with the specified ID does not exist!"));
+
+        verifyNoInteractions(recipeMapper);
+    }
+
     private Recipes recipe(Integer id, String name, Boolean isPrivate) {
         Recipes recipe = new Recipes();
         recipe.setId(id);
@@ -157,6 +219,31 @@ public class RecipesRestControllerTest {
                 recipe.getPortions(),
                 recipe.getCookingTime(),
                 recipe.getCategory(),
-                "/recipes/image/" + recipe.getId());
+                "/api/v1/recipes/" + recipe.getId() + "/image");
+    }
+
+    private RecipeDetailsResponse details(Recipes recipe) {
+        return new RecipeDetailsResponse(
+                recipe.getId(),
+                recipe.getRecipeName(),
+                recipe.getProducts(),
+                recipe.getPortions(),
+                recipe.getCookingTime(),
+                recipe.getCookingSteps(),
+                recipe.getCategory(),
+                "/api/v1/recipes/" + recipe.getId() + "/image",
+                new AuthorSummaryResponse(
+                        recipe.getUser().getId(),
+                        recipe.getUser().getFirstName(),
+                        recipe.getUser().getLastName()));
+    }
+
+    private Users author(Integer id, String firstName, String lastName) {
+        Users user = new Users();
+        user.setId(id);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail("author" + id + "@mail.com");
+        return user;
     }
 }
