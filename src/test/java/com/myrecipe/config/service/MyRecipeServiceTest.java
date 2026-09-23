@@ -1,13 +1,16 @@
 package com.myrecipe.config.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import com.myrecipe.entities.Categories;
 import com.myrecipe.entities.Recipes;
+import com.myrecipe.exceptions.RecordNotFoundException;
 import com.myrecipe.repository.RecipesRepository;
 import com.myrecipe.repository.UsersRepository;
 import com.myrecipe.service.MyRecipeService;
@@ -50,6 +53,30 @@ public class MyRecipeServiceTest {
         assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(6);
         assertThat(result.getContent()).containsExactly(firstRecipe, secondRecipe);
         assertThat(result.getContent()).allMatch(recipe -> !recipe.getIsPrivate());
+    }
+
+    @Test
+    public void getPublicRecipeByIdReturnsPublicRecipe() {
+        MyRecipeService service = new MyRecipeService(recipesRepository, usersRepository, passwordEncoder);
+        Recipes recipe = recipe(5, false);
+        when(recipesRepository.findPublicRecipeById(5)).thenReturn(Optional.of(recipe));
+
+        Recipes result = service.getPublicRecipeById(5);
+
+        assertThat(result).isEqualTo(recipe);
+        verify(recipesRepository).findPublicRecipeById(5);
+    }
+
+    @Test
+    public void getPublicRecipeByIdTreatsPrivateRecipeAsNotFound() {
+        MyRecipeService service = new MyRecipeService(recipesRepository, usersRepository, passwordEncoder);
+        when(recipesRepository.findPublicRecipeById(8)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.getPublicRecipeById(8))
+                .isInstanceOf(RecordNotFoundException.class)
+                .hasMessage("Recipe with the specified ID does not exist!");
+
+        verify(recipesRepository).findPublicRecipeById(8);
     }
 
     private Recipes recipe(Integer id, Boolean isPrivate) {
