@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.myrecipe.entities.Categories;
 import com.myrecipe.entities.Recipes;
 
 @Repository
@@ -23,6 +24,14 @@ public interface RecipesRepository extends JpaRepository<Recipes, Integer> {
             countQuery = "SELECT COUNT(*) FROM recipes WHERE is_private = false",
             nativeQuery = true)
     Page<Recipes> findAllPublicRecipesOrderByIdDesc(Pageable pageable);
+
+    @Query("SELECT r FROM Recipes r "
+            + "WHERE r.isPrivate = false "
+            + "AND (:keyword IS NULL OR LOWER(r.recipeName) LIKE LOWER(CONCAT('%', :keyword, '%'))) "
+            + "AND (:category IS NULL OR r.category = :category)")
+    Page<Recipes> findPublicRecipes(@Param("keyword") String keyword,
+                                    @Param("category") Categories category,
+                                    Pageable pageable);
 
     @Query(value = "SELECT * FROM recipes WHERE is_private = false", nativeQuery = true)
     List<Recipes> findAllPublicRecipes();

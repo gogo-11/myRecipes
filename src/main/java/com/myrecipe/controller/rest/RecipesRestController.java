@@ -49,11 +49,13 @@ public class RecipesRestController {
 
     @GetMapping
     public ResponseEntity<RecipePageResponse> getPublicRecipes(
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "category", required = false) String category,
             @RequestParam(name = "page", defaultValue = "" + DEFAULT_PAGE) Integer page,
             @RequestParam(name = "size", defaultValue = "" + DEFAULT_SIZE) Integer size) {
         validatePagination(page, size);
 
-        Page<Recipes> recipesPage = recipesService.getPublicRecipesPage(page, size);
+        Page<Recipes> recipesPage = recipesService.getPublicRecipesPage(keyword, category, page, size);
         List<RecipeSummaryResponse> content = recipesPage.getContent().stream()
                 .map(recipeMapper::toSummaryResponse)
                 .collect(Collectors.toList());
