@@ -73,6 +73,11 @@ gemini.api-key=Enter your API key here
 gemini.model=${GEMINI_MODEL:gemini-3.5-flash}
 gemini.fallback-model=${GEMINI_FALLBACK_MODEL:gemini-3.5-flash-lite}
 gemini.base-url=https://generativelanguage.googleapis.com/v1beta
+
+# JWT authentication
+app.jwt.secret=${JWT_SECRET:}
+app.jwt.expiration-minutes=${JWT_EXPIRATION_MINUTES:60}
+app.jwt.issuer=${JWT_ISSUER:yourapp-api}
 ```
 ## Usage
 1. Ensure your MySQL server is running, and the database your_app_db_name exists. If it doesn't exist, you can create it in MySQL Workbench or using the command line:

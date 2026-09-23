@@ -25,11 +25,15 @@ import com.myrecipe.entities.responses.RecipeDetailsResponse;
 import com.myrecipe.entities.responses.RecipeSummaryResponse;
 import com.myrecipe.exceptions.InvalidCategoryException;
 import com.myrecipe.exceptions.RecordNotFoundException;
+import com.myrecipe.security.JwtTokenService;
+import com.myrecipe.security.RestAccessDeniedHandler;
+import com.myrecipe.security.RestAuthenticationEntryPoint;
 import com.myrecipe.service.NutritionService;
 import com.myrecipe.service.RecipeMapper;
 import com.myrecipe.service.RecipesService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
@@ -41,6 +45,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(RecipesRestController.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class RecipesRestControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -56,6 +61,15 @@ public class RecipesRestControllerTest {
 
     @MockBean(name = "userDetailsServiceImpl")
     private UserDetailsService userDetailsService;
+
+    @MockBean
+    private JwtTokenService jwtTokenService;
+
+    @MockBean
+    private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+
+    @MockBean
+    private RestAccessDeniedHandler restAccessDeniedHandler;
 
     @Test
     public void getPublicRecipesReturnsPopulatedPage() throws Exception {
