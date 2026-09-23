@@ -46,6 +46,10 @@ public interface RecipesRepository extends JpaRepository<Recipes, Integer> {
     @Query("SELECT r FROM Recipes r WHERE r.id = :id AND r.isPrivate = false")
     Optional<Recipes> findPublicRecipeById(@Param("id") Integer id);
 
+    @Query("SELECT r.image FROM Recipes r "
+            + "WHERE r.id = :id AND r.isPrivate = false")
+    Optional<byte[]> findPublicRecipeImageById(@Param("id") Integer id);
+
     @Query(value = "SELECT * FROM recipes WHERE is_private = false AND recipe_name = :recipeName", nativeQuery = true)
     Recipes findByName(@Param("recipeName") String recipeName);
 

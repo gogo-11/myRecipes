@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -81,6 +83,17 @@ public class RecipesRestController {
     public ResponseEntity<RecipeDetailsResponse> getRecipeById (@PathVariable("id") Integer id) {
         Recipes recipe = recipesService.getPublicRecipeById(id);
         return new ResponseEntity<>(recipeMapper.toDetailsResponse(recipe), HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/image")
+    public ResponseEntity<byte[]> getRecipeImage(@PathVariable("id") Integer id) {
+        byte[] image = recipesService.getPublicRecipeImage(id);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_JPEG);
+        headers.setContentLength(image.length);
+
+        return new ResponseEntity<>(image, headers, HttpStatus.OK);
     }
 
     /**

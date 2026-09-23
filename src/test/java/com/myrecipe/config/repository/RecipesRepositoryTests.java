@@ -63,6 +63,57 @@ public class RecipesRepositoryTests {
     }
 
     @Test
+    public void findPublicRecipeImageByIdReturnsPublicRecipeImageBytes() {
+        Users author = userRepo.save(author("public-image-author@mail.com"));
+        byte[] image = new byte[] {1, 2, 3, 4};
+        Recipes publicRecipe = recipe("Public image recipe", false, author);
+        publicRecipe.setImage(image);
+        recipeRepo.save(publicRecipe);
+        entityManager.flush();
+        entityManager.clear();
+
+        Optional<byte[]> foundImage = recipeRepo.findPublicRecipeImageById(publicRecipe.getId());
+
+        assertThat(foundImage).isPresent();
+        assertThat(foundImage.get()).containsExactly(image);
+    }
+
+    @Test
+    public void findPublicRecipeImageByIdDoesNotReturnPrivateRecipeImage() {
+        Users author = userRepo.save(author("private-image-author@mail.com"));
+        Recipes privateRecipe = recipe("Private image recipe", true, author);
+        privateRecipe.setImage(new byte[] {5, 6, 7});
+        recipeRepo.save(privateRecipe);
+        entityManager.flush();
+        entityManager.clear();
+
+        Optional<byte[]> foundImage = recipeRepo.findPublicRecipeImageById(privateRecipe.getId());
+
+        assertThat(foundImage).isEmpty();
+    }
+
+    @Test
+    public void findPublicRecipeImageByIdReturnsEmptyForMissingRecipe() {
+        Optional<byte[]> foundImage = recipeRepo.findPublicRecipeImageById(9999);
+
+        assertThat(foundImage).isEmpty();
+    }
+
+    @Test
+    public void findPublicRecipeImageByIdReturnsEmptyForPublicRecipeWithoutImage() {
+        Users author = userRepo.save(author("no-image-author@mail.com"));
+        Recipes publicRecipe = recipe("No image recipe", false, author);
+        publicRecipe.setImage(null);
+        recipeRepo.save(publicRecipe);
+        entityManager.flush();
+        entityManager.clear();
+
+        Optional<byte[]> foundImage = recipeRepo.findPublicRecipeImageById(publicRecipe.getId());
+
+        assertThat(foundImage).isEmpty();
+    }
+
+    @Test
     public void findPublicRecipesReturnsPublicRecipesSortedByIdDescending() {
         Users author = userRepo.save(author("sorted-author@mail.com"));
         Recipes olderRecipe = recipe("Older recipe", false, author, Categories.MEAT);

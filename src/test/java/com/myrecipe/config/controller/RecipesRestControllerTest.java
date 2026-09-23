@@ -10,6 +10,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +35,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -293,6 +297,35 @@ public class RecipesRestControllerTest {
                 .andExpect(jsonPath("$.message").value("Record was not found"))
                 .andExpect(jsonPath("$.details").value("Recipe with the specified ID does not exist!"));
 
+        verifyNoInteractions(recipeMapper);
+    }
+
+    @Test
+    public void getPublicRecipeImageReturnsJpegBytes() throws Exception {
+        byte[] image = new byte[] {1, 2, 3, 4};
+        when(recipesService.getPublicRecipeImage(20)).thenReturn(image);
+
+        mockMvc.perform(get("/api/v1/recipes/20/image"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.IMAGE_JPEG))
+                .andExpect(header().longValue(HttpHeaders.CONTENT_LENGTH, image.length))
+                .andExpect(content().bytes(image));
+
+        verify(recipesService).getPublicRecipeImage(20);
+        verifyNoInteractions(recipeMapper);
+    }
+
+    @Test
+    public void getPublicRecipeImageReturnsNotFoundForMissingPrivateOrNoImageRecipe() throws Exception {
+        when(recipesService.getPublicRecipeImage(21))
+                .thenThrow(new RecordNotFoundException("Recipe image was not found!"));
+
+        mockMvc.perform(get("/api/v1/recipes/21/image"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Record was not found"))
+                .andExpect(jsonPath("$.details").value("Recipe image was not found!"));
+
+        verify(recipesService).getPublicRecipeImage(21);
         verifyNoInteractions(recipeMapper);
     }
 
