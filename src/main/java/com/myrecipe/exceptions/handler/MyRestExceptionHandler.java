@@ -1,11 +1,16 @@
 package com.myrecipe.exceptions.handler;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import com.myrecipe.entities.responses.FieldValidationErrorResponse;
 import com.myrecipe.entities.responses.MyApiErrorResponse;
 import com.myrecipe.exceptions.DuplicateRecordFoundException;
 import com.myrecipe.exceptions.ImageFormatException;
@@ -31,6 +36,20 @@ public class MyRestExceptionHandler {
                 "Invalid request",
                 e.getMessage(),
                 HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<FieldValidationErrorResponse> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException e) {
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        e.getBindingResult().getFieldErrors().forEach(error ->
+                fieldErrors.put(error.getField(), error.getDefaultMessage()));
+
+        FieldValidationErrorResponse response = new FieldValidationErrorResponse(
+                "Invalid request",
+                fieldErrors,
+                HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

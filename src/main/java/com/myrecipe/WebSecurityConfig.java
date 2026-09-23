@@ -58,6 +58,7 @@ public class WebSecurityConfig {
                 .authorizeRequests()
                     .antMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
                     .antMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                    .antMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
                     .antMatchers(HttpMethod.GET, "/api/v1/recipes").permitAll()
                     .regexMatchers(HttpMethod.GET, "/api/v1/recipes/[0-9]+").permitAll()
                     .regexMatchers(HttpMethod.GET, "/api/v1/recipes/[0-9]+/image").permitAll()

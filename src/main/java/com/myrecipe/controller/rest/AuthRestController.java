@@ -2,10 +2,13 @@ package com.myrecipe.controller.rest;
 
 import com.myrecipe.entities.Users;
 import com.myrecipe.entities.requests.LoginRequest;
+import com.myrecipe.entities.requests.RegisterRequest;
 import com.myrecipe.entities.responses.AuthenticatedUserResponse;
 import com.myrecipe.entities.responses.LoginResponse;
 import com.myrecipe.entities.responses.MyApiErrorResponse;
+import com.myrecipe.entities.responses.RegisterResponse;
 import com.myrecipe.security.JwtTokenService;
+import com.myrecipe.service.AuthService;
 import com.myrecipe.service.UsersService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.authentication.AuthenticationManager;
+import javax.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,13 +29,16 @@ public class AuthRestController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenService jwtTokenService;
     private final UsersService usersService;
+    private final AuthService authService;
 
     public AuthRestController(AuthenticationManager authenticationManager,
                               JwtTokenService jwtTokenService,
-                              UsersService usersService) {
+                              UsersService usersService,
+                              AuthService authService) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenService = jwtTokenService;
         this.usersService = usersService;
+        this.authService = authService;
     }
 
     @PostMapping("/login")
@@ -55,6 +62,11 @@ public class AuthRestController {
                     new MyApiErrorResponse("Unauthorized", "Invalid email or password", HttpStatus.UNAUTHORIZED),
                     HttpStatus.UNAUTHORIZED);
         }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
+        return new ResponseEntity<>(authService.register(request), HttpStatus.CREATED);
     }
 
     private AuthenticatedUserResponse toAuthenticatedUserResponse(Users user) {
