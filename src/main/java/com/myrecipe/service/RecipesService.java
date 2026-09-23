@@ -16,6 +16,7 @@ public interface RecipesService {
     RecipesResponse createRecipe(RecipesRequest recipesRequest, Integer userId);
     Recipes getById(Integer id);
     Recipes getPublicRecipeById(Integer id);
+    byte[] getPublicRecipeImage(Integer id);
     Recipes getByName(RecipesRequest request);
     List<Recipes> getByKeyword(String keyword);
     List<Recipes> getByCategory (RecipesRequest request);

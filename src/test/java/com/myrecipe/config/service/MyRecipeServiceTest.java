@@ -141,6 +141,30 @@ public class MyRecipeServiceTest {
         verify(recipesRepository).findPublicRecipeById(8);
     }
 
+    @Test
+    public void getPublicRecipeImageReturnsImageBytes() {
+        MyRecipeService service = new MyRecipeService(recipesRepository, usersRepository, passwordEncoder);
+        byte[] image = new byte[] {1, 2, 3};
+        when(recipesRepository.findPublicRecipeImageById(12)).thenReturn(Optional.of(image));
+
+        byte[] result = service.getPublicRecipeImage(12);
+
+        assertThat(result).containsExactly(image);
+        verify(recipesRepository).findPublicRecipeImageById(12);
+    }
+
+    @Test
+    public void getPublicRecipeImageThrowsNotFoundWhenImageIsUnavailable() {
+        MyRecipeService service = new MyRecipeService(recipesRepository, usersRepository, passwordEncoder);
+        when(recipesRepository.findPublicRecipeImageById(12)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.getPublicRecipeImage(12))
+                .isInstanceOf(RecordNotFoundException.class)
+                .hasMessage("Recipe image was not found!");
+
+        verify(recipesRepository).findPublicRecipeImageById(12);
+    }
+
     private Recipes recipe(Integer id, Boolean isPrivate) {
         Recipes recipe = new Recipes();
         recipe.setId(id);

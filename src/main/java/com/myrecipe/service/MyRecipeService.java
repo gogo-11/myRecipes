@@ -164,6 +164,13 @@ public class MyRecipeService implements RecipesService{
                 .orElseThrow(() -> new RecordNotFoundException("Recipe with the specified ID does not exist!"));
     }
 
+    @Override
+    public byte[] getPublicRecipeImage(Integer recipeId) {
+        return recipesRepository
+                .findPublicRecipeImageById(recipeId)
+                .orElseThrow(() -> new RecordNotFoundException("Recipe image was not found!"));
+    }
+
     /**
      *
      * @param request recipe name which will be used for searching
