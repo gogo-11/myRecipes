@@ -36,14 +36,20 @@ public class MyRecipeService implements RecipesService{
     private static final int MAX_HEIGHT = 720;
     private static final int MIN_WIDTH = 700;
     private static final int MIN_HEIGHT = 400;
-    @Autowired
-    RecipesRepository recipesRepository;
+    private final RecipesRepository recipesRepository;
+
+    private final UsersRepository usersRepository;
+
+    private final PasswordEncoder encoder;
 
     @Autowired
-    UsersRepository usersRepository;
-
-    @Autowired
-    private PasswordEncoder encoder;
+    public MyRecipeService(RecipesRepository recipesRepository,
+                           UsersRepository usersRepository,
+                           PasswordEncoder encoder) {
+        this.recipesRepository = recipesRepository;
+        this.usersRepository = usersRepository;
+        this.encoder = encoder;
+    }
 
     /**
      *
@@ -266,6 +272,12 @@ public class MyRecipeService implements RecipesService{
             return userRecipes;
         } else
             throw new RecordNotFoundException("This user does not have any public recipes");
+    }
+
+    @Override
+    public Page<Recipes> getPublicRecipesPage(int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return recipesRepository.findAllPublicRecipesOrderByIdDesc(pageable);
     }
 
     @Override
