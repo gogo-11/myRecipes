@@ -24,6 +24,7 @@ public interface RecipesService {
     List<Recipes> getLastTenPublicRecipes();
     List<Recipes> getUsersAllPrivateRecipes(UsersRequest usersRequest);
     List<Recipes> getUsersAllPublicRecipes(Integer id);
+    Page<Recipes> getPublicRecipesPage(String keyword, String category, int pageNumber, int pageSize);
     Page<Recipes> getPublicRecipesPage(int pageNumber, int pageSize);
     Page<Recipes> getPage(int pageNo);
     Optional<Recipes> recipeUpdate(Integer id, RecipesRequest request);

@@ -2,6 +2,7 @@ package com.myrecipe.config.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -10,6 +11,7 @@ import java.util.Optional;
 
 import com.myrecipe.entities.Categories;
 import com.myrecipe.entities.Recipes;
+import com.myrecipe.exceptions.InvalidCategoryException;
 import com.myrecipe.exceptions.RecordNotFoundException;
 import com.myrecipe.repository.RecipesRepository;
 import com.myrecipe.repository.UsersRepository;
@@ -42,17 +44,77 @@ public class MyRecipeServiceTest {
         Recipes secondRecipe = recipe(2, false);
         Page<Recipes> expectedPage = new PageImpl<>(Arrays.asList(firstRecipe, secondRecipe));
 
-        when(recipesRepository.findAllPublicRecipesOrderByIdDesc(org.mockito.ArgumentMatchers.any(Pageable.class)))
+        when(recipesRepository.findPublicRecipes(
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull(),
+                any(Pageable.class)))
                 .thenReturn(expectedPage);
 
         Page<Recipes> result = service.getPublicRecipesPage(0, 6);
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(recipesRepository).findAllPublicRecipesOrderByIdDesc(pageableCaptor.capture());
+        verify(recipesRepository).findPublicRecipes(
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull(),
+                pageableCaptor.capture());
         assertThat(pageableCaptor.getValue().getPageNumber()).isEqualTo(0);
         assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(6);
+        assertThat(pageableCaptor.getValue().getSort().getOrderFor("id").getDirection())
+                .isEqualTo(org.springframework.data.domain.Sort.Direction.DESC);
         assertThat(result.getContent()).containsExactly(firstRecipe, secondRecipe);
         assertThat(result.getContent()).allMatch(recipe -> !recipe.getIsPrivate());
+    }
+
+    @Test
+    public void getPublicRecipesPageTrimsKeywordAndNormalizesCategory() {
+        MyRecipeService service = new MyRecipeService(recipesRepository, usersRepository, passwordEncoder);
+        Page<Recipes> expectedPage = new PageImpl<>(Arrays.asList(recipe(4, false)));
+
+        when(recipesRepository.findPublicRecipes(
+                org.mockito.ArgumentMatchers.eq("Chicken"),
+                org.mockito.ArgumentMatchers.eq(Categories.MEAT),
+                any(Pageable.class)))
+                .thenReturn(expectedPage);
+
+        Page<Recipes> result = service.getPublicRecipesPage("  Chicken  ", " meat ", 0, 6);
+
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(recipesRepository).findPublicRecipes(
+                org.mockito.ArgumentMatchers.eq("Chicken"),
+                org.mockito.ArgumentMatchers.eq(Categories.MEAT),
+                pageableCaptor.capture());
+        assertThat(pageableCaptor.getValue().getSort().getOrderFor("id").getDirection())
+                .isEqualTo(org.springframework.data.domain.Sort.Direction.DESC);
+        assertThat(result).isEqualTo(expectedPage);
+    }
+
+    @Test
+    public void getPublicRecipesPageTreatsBlankFiltersAsNoFilters() {
+        MyRecipeService service = new MyRecipeService(recipesRepository, usersRepository, passwordEncoder);
+        Page<Recipes> expectedPage = new PageImpl<>(Arrays.asList(recipe(6, false)));
+
+        when(recipesRepository.findPublicRecipes(
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull(),
+                any(Pageable.class)))
+                .thenReturn(expectedPage);
+
+        Page<Recipes> result = service.getPublicRecipesPage("   ", "   ", 0, 6);
+
+        verify(recipesRepository).findPublicRecipes(
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull(),
+                any(Pageable.class));
+        assertThat(result).isEqualTo(expectedPage);
+    }
+
+    @Test
+    public void getPublicRecipesPageRejectsInvalidCategory() {
+        MyRecipeService service = new MyRecipeService(recipesRepository, usersRepository, passwordEncoder);
+
+        assertThatThrownBy(() -> service.getPublicRecipesPage(null, "not-a-category", 0, 6))
+                .isInstanceOf(InvalidCategoryException.class)
+                .hasMessage("Wrong category");
     }
 
     @Test

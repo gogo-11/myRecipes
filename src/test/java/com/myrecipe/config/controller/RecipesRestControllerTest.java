@@ -3,6 +3,7 @@ package com.myrecipe.config.controller;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,6 +21,7 @@ import com.myrecipe.entities.Users;
 import com.myrecipe.entities.responses.AuthorSummaryResponse;
 import com.myrecipe.entities.responses.RecipeDetailsResponse;
 import com.myrecipe.entities.responses.RecipeSummaryResponse;
+import com.myrecipe.exceptions.InvalidCategoryException;
 import com.myrecipe.exceptions.RecordNotFoundException;
 import com.myrecipe.service.NutritionService;
 import com.myrecipe.service.RecipeMapper;
@@ -60,7 +62,7 @@ public class RecipesRestControllerTest {
                 PageRequest.of(0, 6),
                 2);
 
-        when(recipesService.getPublicRecipesPage(0, 6)).thenReturn(recipePage);
+        when(recipesService.getPublicRecipesPage(null, null, 0, 6)).thenReturn(recipePage);
         when(recipeMapper.toSummaryResponse(firstRecipe)).thenReturn(summary(firstRecipe));
         when(recipeMapper.toSummaryResponse(secondRecipe)).thenReturn(summary(secondRecipe));
 
@@ -77,7 +79,7 @@ public class RecipesRestControllerTest {
                 .andExpect(jsonPath("$.first").value(true))
                 .andExpect(jsonPath("$.last").value(true));
 
-        verify(recipesService).getPublicRecipesPage(0, 6);
+        verify(recipesService).getPublicRecipesPage(null, null, 0, 6);
     }
 
     @Test
@@ -86,7 +88,7 @@ public class RecipesRestControllerTest {
                 Collections.emptyList(),
                 PageRequest.of(0, 6),
                 0);
-        when(recipesService.getPublicRecipesPage(0, 6)).thenReturn(recipePage);
+        when(recipesService.getPublicRecipesPage(null, null, 0, 6)).thenReturn(recipePage);
 
         mockMvc.perform(get("/api/v1/recipes"))
                 .andExpect(status().isOk())
@@ -129,7 +131,7 @@ public class RecipesRestControllerTest {
                 PageRequest.of(1, 1),
                 3);
 
-        when(recipesService.getPublicRecipesPage(1, 1)).thenReturn(recipePage);
+        when(recipesService.getPublicRecipesPage(null, null, 1, 1)).thenReturn(recipePage);
         when(recipeMapper.toSummaryResponse(any(Recipes.class))).thenReturn(summary(recipe));
 
         mockMvc.perform(get("/api/v1/recipes").param("page", "1").param("size", "1"))
@@ -141,7 +143,100 @@ public class RecipesRestControllerTest {
                 .andExpect(jsonPath("$.first").value(false))
                 .andExpect(jsonPath("$.last").value(false));
 
-        verify(recipesService).getPublicRecipesPage(eq(1), eq(1));
+        verify(recipesService).getPublicRecipesPage(isNull(), isNull(), eq(1), eq(1));
+    }
+
+    @Test
+    public void getPublicRecipesAcceptsKeywordFilter() throws Exception {
+        Recipes recipe = recipe(11, "Chicken soup", false);
+        Page<Recipes> recipePage = new PageImpl<>(
+                Collections.singletonList(recipe),
+                PageRequest.of(0, 6),
+                1);
+
+        when(recipesService.getPublicRecipesPage(" chicken ", null, 0, 6)).thenReturn(recipePage);
+        when(recipeMapper.toSummaryResponse(recipe)).thenReturn(summary(recipe));
+
+        mockMvc.perform(get("/api/v1/recipes").param("keyword", " chicken "))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].recipeName").value("Chicken soup"))
+                .andExpect(jsonPath("$.content[0].imageUrl").value("/api/v1/recipes/11/image"));
+
+        verify(recipesService).getPublicRecipesPage(" chicken ", null, 0, 6);
+    }
+
+    @Test
+    public void getPublicRecipesAcceptsCategoryFilter() throws Exception {
+        Recipes recipe = recipe(13, "Tomato soup", false);
+        recipe.setCategory(Categories.SOUPS);
+        Page<Recipes> recipePage = new PageImpl<>(
+                Collections.singletonList(recipe),
+                PageRequest.of(0, 6),
+                1);
+
+        when(recipesService.getPublicRecipesPage(null, "SOUPS", 0, 6)).thenReturn(recipePage);
+        when(recipeMapper.toSummaryResponse(recipe)).thenReturn(summary(recipe));
+
+        mockMvc.perform(get("/api/v1/recipes").param("category", "SOUPS"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].category").value("SOUPS"));
+
+        verify(recipesService).getPublicRecipesPage(null, "SOUPS", 0, 6);
+    }
+
+    @Test
+    public void getPublicRecipesAcceptsKeywordAndCategoryFilters() throws Exception {
+        Recipes recipe = recipe(14, "Chicken salad", false);
+        recipe.setCategory(Categories.SALADS);
+        Page<Recipes> recipePage = new PageImpl<>(
+                Collections.singletonList(recipe),
+                PageRequest.of(1, 2),
+                3);
+
+        when(recipesService.getPublicRecipesPage("Chicken", "SALADS", 1, 2)).thenReturn(recipePage);
+        when(recipeMapper.toSummaryResponse(recipe)).thenReturn(summary(recipe));
+
+        mockMvc.perform(get("/api/v1/recipes")
+                        .param("keyword", "Chicken")
+                        .param("category", "SALADS")
+                        .param("page", "1")
+                        .param("size", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.size").value(2))
+                .andExpect(jsonPath("$.totalElements").value(3));
+
+        verify(recipesService).getPublicRecipesPage("Chicken", "SALADS", 1, 2);
+    }
+
+    @Test
+    public void getPublicRecipesReturnsEmptyPageForNoMatches() throws Exception {
+        Page<Recipes> recipePage = new PageImpl<>(
+                Collections.emptyList(),
+                PageRequest.of(0, 6),
+                0);
+        when(recipesService.getPublicRecipesPage("missing", null, 0, 6)).thenReturn(recipePage);
+
+        mockMvc.perform(get("/api/v1/recipes").param("keyword", "missing"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(0)))
+                .andExpect(jsonPath("$.totalElements").value(0));
+
+        verify(recipesService).getPublicRecipesPage("missing", null, 0, 6);
+    }
+
+    @Test
+    public void getPublicRecipesReturnsBadRequestForInvalidCategory() throws Exception {
+        when(recipesService.getPublicRecipesPage(null, "INVALID", 0, 6))
+                .thenThrow(new InvalidCategoryException("Wrong category"));
+
+        mockMvc.perform(get("/api/v1/recipes").param("category", "INVALID"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid category"))
+                .andExpect(jsonPath("$.details").value("Wrong category"));
     }
 
     @Test

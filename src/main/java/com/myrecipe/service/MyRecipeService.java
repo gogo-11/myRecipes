@@ -2,12 +2,14 @@ package com.myrecipe.service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -283,8 +285,16 @@ public class MyRecipeService implements RecipesService{
 
     @Override
     public Page<Recipes> getPublicRecipesPage(int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        return recipesRepository.findAllPublicRecipesOrderByIdDesc(pageable);
+        return getPublicRecipesPage(null, null, pageNumber, pageSize);
+    }
+
+    @Override
+    public Page<Recipes> getPublicRecipesPage(String keyword, String category, int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "id"));
+        return recipesRepository.findPublicRecipes(
+                normalizeKeyword(keyword),
+                normalizeCategory(category),
+                pageable);
     }
 
     @Override
@@ -363,5 +373,31 @@ public class MyRecipeService implements RecipesService{
     private boolean isRecipeNameChanged(Integer recipeId, String recipeName) {
         Recipes recipe = recipesRepository.getReferenceById(recipeId);
         return !recipe.getRecipeName().equals(recipeName);
+    }
+
+    private String normalizeKeyword(String keyword) {
+        if (keyword == null) {
+            return null;
+        }
+
+        String trimmedKeyword = keyword.trim();
+        return trimmedKeyword.isEmpty() ? null : trimmedKeyword;
+    }
+
+    private Categories normalizeCategory(String category) {
+        if (category == null) {
+            return null;
+        }
+
+        String normalizedCategory = category.trim().toUpperCase(Locale.ROOT);
+        if (normalizedCategory.isEmpty()) {
+            return null;
+        }
+
+        if (!Categories.categoryExists(normalizedCategory)) {
+            throw new InvalidCategoryException("Wrong category");
+        }
+
+        return Categories.valueOf(normalizedCategory);
     }
 }
