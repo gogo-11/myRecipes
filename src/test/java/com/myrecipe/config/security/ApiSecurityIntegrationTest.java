@@ -3,6 +3,8 @@ package com.myrecipe.config.security;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -19,15 +21,18 @@ import com.myrecipe.entities.Users;
 import com.myrecipe.entities.EmailConfirmationToken;
 import com.myrecipe.repository.EmailConfirmationTokenRepository;
 import com.myrecipe.repository.UsersRepository;
+import com.myrecipe.security.EmailConfirmationResendThrottle;
 import com.myrecipe.security.JwtTokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -53,12 +58,16 @@ public class ApiSecurityIntegrationTest {
     @Autowired
     private JwtTokenService jwtTokenService;
 
+    @Autowired
+    private EmailConfirmationResendThrottle resendThrottle;
+
     @MockBean
     private JavaMailSender javaMailSender;
 
     @BeforeEach
     public void resetMocks() {
         reset(javaMailSender);
+        resendThrottle.clear();
     }
 
     @Test
@@ -128,7 +137,10 @@ public class ApiSecurityIntegrationTest {
         org.assertj.core.api.Assertions.assertThat(token).isNotNull();
         org.assertj.core.api.Assertions.assertThat(token.getToken()).isNotBlank();
 
-        verify(javaMailSender).send(any(SimpleMailMessage.class));
+        ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(javaMailSender).send(messageCaptor.capture());
+        org.assertj.core.api.Assertions.assertThat(messageCaptor.getValue().getText())
+                .contains("http://localhost:4200/confirm-email/" + token.getToken());
     }
 
     @Test
@@ -218,6 +230,185 @@ public class ApiSecurityIntegrationTest {
     }
 
     @Test
+    public void confirmEmailActivatesUserAndDeletesTokenWithoutJwt() throws Exception {
+        Users user = createUser("confirm-success@mail.com", "secret123", false);
+        createEmailToken(user, "confirm-success-token");
+
+        mockMvc.perform(post("/api/v1/auth/email-confirmations/confirm")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"confirm-success-token\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Email confirmed successfully."));
+
+        Users confirmedUser = usersRepository.findByEmail("confirm-success@mail.com");
+        org.assertj.core.api.Assertions.assertThat(confirmedUser.isActivated()).isTrue();
+        org.assertj.core.api.Assertions.assertThat(
+                emailConfirmationTokenRepository.findByToken("confirm-success-token")).isNull();
+    }
+
+    @Test
+    public void confirmEmailReturnsBadRequestForUnknownToken() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/email-confirmations/confirm")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"unknown-token\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid confirmation token."));
+    }
+
+    @Test
+    public void confirmEmailReturnsBadRequestForAlreadyUsedToken() throws Exception {
+        Users user = createUser("confirm-repeat@mail.com", "secret123", false);
+        createEmailToken(user, "confirm-repeat-token");
+
+        mockMvc.perform(post("/api/v1/auth/email-confirmations/confirm")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"confirm-repeat-token\"}"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/v1/auth/email-confirmations/confirm")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"confirm-repeat-token\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid confirmation token."));
+    }
+
+    @Test
+    public void resendConfirmationReturnsAcceptedForUnknownEmailWithoutSending() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/email-confirmations/resend")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"missing-resend@mail.com\"}"))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.message").value(
+                        "If the account exists and still needs confirmation, a confirmation email will be sent."));
+
+        verify(javaMailSender, never()).send(any(SimpleMailMessage.class));
+    }
+
+    @Test
+    public void resendConfirmationReturnsAcceptedForActiveUserWithoutSending() throws Exception {
+        createUser("active-resend@mail.com", "secret123", true);
+
+        mockMvc.perform(post("/api/v1/auth/email-confirmations/resend")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"active-resend@mail.com\"}"))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.message").value(
+                        "If the account exists and still needs confirmation, a confirmation email will be sent."));
+
+        verify(javaMailSender, never()).send(any(SimpleMailMessage.class));
+    }
+
+    @Test
+    public void resendConfirmationReusesExistingTokenForInactiveUser() throws Exception {
+        Users user = createUser("inactive-existing-token@mail.com", "secret123", false);
+        createEmailToken(user, "existing-resend-token");
+
+        mockMvc.perform(post("/api/v1/auth/email-confirmations/resend")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"inactive-existing-token@mail.com\"}"))
+                .andExpect(status().isAccepted());
+
+        EmailConfirmationToken token = emailConfirmationTokenRepository.findByUser(user.getId());
+        org.assertj.core.api.Assertions.assertThat(token.getToken()).isEqualTo("existing-resend-token");
+
+        ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(javaMailSender).send(messageCaptor.capture());
+        org.assertj.core.api.Assertions.assertThat(messageCaptor.getValue().getText())
+                .contains("http://localhost:4200/confirm-email/existing-resend-token");
+    }
+
+    @Test
+    public void resendConfirmationCreatesTokenForInactiveUserWithoutToken() throws Exception {
+        Users user = createUser("inactive-no-token@mail.com", "secret123", false);
+
+        mockMvc.perform(post("/api/v1/auth/email-confirmations/resend")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"inactive-no-token@mail.com\"}"))
+                .andExpect(status().isAccepted());
+
+        EmailConfirmationToken token = emailConfirmationTokenRepository.findByUser(user.getId());
+        org.assertj.core.api.Assertions.assertThat(token).isNotNull();
+        org.assertj.core.api.Assertions.assertThat(token.getToken()).isNotBlank();
+
+        ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(javaMailSender).send(messageCaptor.capture());
+        org.assertj.core.api.Assertions.assertThat(messageCaptor.getValue().getText())
+                .contains("http://localhost:4200/confirm-email/" + token.getToken());
+    }
+
+    @Test
+    public void resendConfirmationMailFailureKeepsExistingToken() throws Exception {
+        Users user = createUser("inactive-mail-failure-existing@mail.com", "secret123", false);
+        createEmailToken(user, "old-working-token");
+        doThrow(new MailSendException("mail down")).when(javaMailSender).send(any(SimpleMailMessage.class));
+
+        mockMvc.perform(post("/api/v1/auth/email-confirmations/resend")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"inactive-mail-failure-existing@mail.com\"}"))
+                .andExpect(status().isAccepted());
+
+        EmailConfirmationToken token = emailConfirmationTokenRepository.findByUser(user.getId());
+        org.assertj.core.api.Assertions.assertThat(token.getToken()).isEqualTo("old-working-token");
+    }
+
+    @Test
+    public void resendConfirmationMailFailureWithoutExistingTokenStoresTokenForLaterReuse() throws Exception {
+        Users user = createUser("inactive-mail-failure-new@mail.com", "secret123", false);
+        doThrow(new MailSendException("mail down")).when(javaMailSender).send(any(SimpleMailMessage.class));
+
+        mockMvc.perform(post("/api/v1/auth/email-confirmations/resend")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"inactive-mail-failure-new@mail.com\"}"))
+                .andExpect(status().isAccepted());
+
+        EmailConfirmationToken token = emailConfirmationTokenRepository.findByUser(user.getId());
+        org.assertj.core.api.Assertions.assertThat(token).isNotNull();
+        String storedToken = token.getToken();
+
+        reset(javaMailSender);
+        mockMvc.perform(post("/api/v1/auth/email-confirmations/resend")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"inactive-mail-failure-new@mail.com\"}"))
+                .andExpect(status().isAccepted());
+
+        ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(javaMailSender).send(messageCaptor.capture());
+        org.assertj.core.api.Assertions.assertThat(messageCaptor.getValue().getText())
+                .contains("http://localhost:4200/confirm-email/" + storedToken);
+        org.assertj.core.api.Assertions.assertThat(emailConfirmationTokenRepository.findByUser(user.getId()).getToken())
+                .isEqualTo(storedToken);
+    }
+
+    @Test
+    public void resendConfirmationThrottledRequestsReturnAcceptedWithoutMoreEmail() throws Exception {
+        Users user = createUser("inactive-throttled@mail.com", "secret123", false);
+        createEmailToken(user, "throttled-token");
+
+        for (int i = 0; i < 4; i++) {
+            mockMvc.perform(post("/api/v1/auth/email-confirmations/resend")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"email\":\"inactive-throttled@mail.com\"}"))
+                    .andExpect(status().isAccepted())
+                    .andExpect(jsonPath("$.message").value(
+                            "If the account exists and still needs confirmation, a confirmation email will be sent."));
+        }
+
+        verify(javaMailSender, org.mockito.Mockito.times(3)).send(any(SimpleMailMessage.class));
+    }
+
+    @Test
+    public void existingMvcConfirmationLinkStillActivatesUser() throws Exception {
+        Users user = createUser("mvc-confirm@mail.com", "secret123", false);
+        createEmailToken(user, "mvc-confirm-token");
+
+        mockMvc.perform(get("/confirm-email/mvc-confirm-token"))
+                .andExpect(status().isOk());
+
+        Users confirmedUser = usersRepository.findByEmail("mvc-confirm@mail.com");
+        org.assertj.core.api.Assertions.assertThat(confirmedUser.isActivated()).isTrue();
+    }
+
+    @Test
     public void publicRecipeListIsAccessibleWithoutToken() throws Exception {
         mockMvc.perform(get("/api/v1/recipes"))
                 .andExpect(status().isOk());
@@ -280,6 +471,13 @@ public class ApiSecurityIntegrationTest {
         user.setRole(RolesEn.USER);
         user.setActivated(activated);
         return usersRepository.save(user);
+    }
+
+    private EmailConfirmationToken createEmailToken(Users user, String tokenValue) {
+        EmailConfirmationToken token = new EmailConfirmationToken();
+        token.setToken(tokenValue);
+        token.setUser(user);
+        return emailConfirmationTokenRepository.save(token);
     }
 
     private String tokenFor(String email) {
