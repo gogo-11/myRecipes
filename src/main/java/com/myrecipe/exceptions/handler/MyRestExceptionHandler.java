@@ -14,6 +14,7 @@ import com.myrecipe.entities.responses.FieldValidationErrorResponse;
 import com.myrecipe.entities.responses.MyApiErrorResponse;
 import com.myrecipe.exceptions.DuplicateRecordFoundException;
 import com.myrecipe.exceptions.ImageFormatException;
+import com.myrecipe.exceptions.InvalidEmailConfirmationTokenException;
 import com.myrecipe.exceptions.InvalidCategoryException;
 import com.myrecipe.exceptions.InvalidLoginDataException;
 import com.myrecipe.exceptions.InvalidUserRequestException;
@@ -75,6 +76,15 @@ public class MyRestExceptionHandler {
                 "Invalid login data",
                 e.getMessage(),
                 HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(InvalidEmailConfirmationTokenException.class)
+    public ResponseEntity<MyApiErrorResponse> handleInvalidEmailConfirmationTokenException(
+            InvalidEmailConfirmationTokenException e) {
+        return buildResponse(
+                "Invalid confirmation token.",
+                e.getMessage(),
+                HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(DuplicateRecordFoundException.class)
