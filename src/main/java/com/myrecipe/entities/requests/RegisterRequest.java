@@ -14,14 +14,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RegisterRequest {
+    private static final String NAME_PATTERN = "^[\\p{L}\\p{M}]+(?:[ '\\-][\\p{L}\\p{M}]+)*$";
+    private static final String NAME_MESSAGE = "Name must contain only letters, spaces, apostrophes or hyphens";
+
     @NotBlank(message = "First name is required")
     @NotNull(message = "First name is required")
-    @Pattern(regexp = "^[А-Яа-я'-]+$", message = "First name must use Cyrillic letters")
+    @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
+    @Pattern(regexp = NAME_PATTERN, message = NAME_MESSAGE)
     private String firstName;
 
     @NotBlank(message = "Last name is required")
     @NotNull(message = "Last name is required")
-    @Pattern(regexp = "^[А-Яа-я'-]+$", message = "Last name must use Cyrillic letters")
+    @Size(min = 2, max = 50, message = "Last name must be between 2 and 50 characters")
+    @Pattern(regexp = NAME_PATTERN, message = NAME_MESSAGE)
     private String lastName;
 
     @NotBlank(message = "Email is required")
