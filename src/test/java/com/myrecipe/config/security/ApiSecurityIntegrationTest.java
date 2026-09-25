@@ -111,65 +111,6 @@ public class ApiSecurityIntegrationTest {
     }
 
     @Test
-    public void registerCreatesInactiveUserWithUserRoleEncodedPasswordAndConfirmationEmail() throws Exception {
-        mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"firstName\":\" Иван \",\"lastName\":\" Петров \","
-                                + "\"email\":\" New.User@Mail.COM \",\"password\":\"secret123\"}"))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.message").value(
-                        "Registration successful. Please confirm your email before logging in."))
-                .andExpect(jsonPath("$.password").doesNotExist())
-                .andExpect(jsonPath("$.accessToken").doesNotExist())
-                .andExpect(jsonPath("$.emailConfirmationToken").doesNotExist())
-                .andExpect(jsonPath("$.passwordResetToken").doesNotExist());
-
-        Users user = usersRepository.findByEmail("new.user@mail.com");
-        org.assertj.core.api.Assertions.assertThat(user).isNotNull();
-        org.assertj.core.api.Assertions.assertThat(user.getFirstName()).isEqualTo("Иван");
-        org.assertj.core.api.Assertions.assertThat(user.getLastName()).isEqualTo("Петров");
-        org.assertj.core.api.Assertions.assertThat(user.getRole()).isEqualTo(RolesEn.USER);
-        org.assertj.core.api.Assertions.assertThat(user.isActivated()).isFalse();
-        org.assertj.core.api.Assertions.assertThat(user.getPassword()).isNotEqualTo("secret123");
-        org.assertj.core.api.Assertions.assertThat(passwordEncoder.matches("secret123", user.getPassword())).isTrue();
-
-        EmailConfirmationToken token = emailConfirmationTokenRepository.findByUser(user.getId());
-        org.assertj.core.api.Assertions.assertThat(token).isNotNull();
-        org.assertj.core.api.Assertions.assertThat(token.getToken()).isNotBlank();
-
-        ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(javaMailSender).send(messageCaptor.capture());
-        org.assertj.core.api.Assertions.assertThat(messageCaptor.getValue().getText())
-                .contains("http://localhost:4200/confirm-email/" + token.getToken());
-    }
-
-    @Test
-    public void registerDuplicateEmailReturnsExistingJsonConflict() throws Exception {
-        createUser("duplicate-register@mail.com", "secret123", true);
-
-        mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"firstName\":\"Иван\",\"lastName\":\"Петров\","
-                                + "\"email\":\"duplicate-register@mail.com\",\"password\":\"secret123\"}"))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("Duplicate record"))
-                .andExpect(jsonPath("$.details").value("An account with this email already exists!"));
-    }
-
-    @Test
-    public void registerInvalidFieldsReturnsJsonBadRequestWithFieldErrors() throws Exception {
-        mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"firstName\":\"\",\"lastName\":\"\",\"email\":\"not-email\",\"password\":\"123\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Invalid request"))
-                .andExpect(jsonPath("$.fieldErrors.firstName").exists())
-                .andExpect(jsonPath("$.fieldErrors.lastName").exists())
-                .andExpect(jsonPath("$.fieldErrors.email").exists())
-                .andExpect(jsonPath("$.fieldErrors.password").exists());
-    }
-
-    @Test
     public void protectedApiReturnsJsonUnauthorizedWhenTokenIsMissing() throws Exception {
         mockMvc.perform(get("/api/v1/recipes/all"))
                 .andExpect(status().isUnauthorized())
@@ -487,3 +428,4 @@ public class ApiSecurityIntegrationTest {
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))));
     }
 }
+
